@@ -61,7 +61,9 @@ def print_path(prev, start, end):
 
 
 if __name__ == "__main__":
-    print("Please input the information of graph!\nthe vertex & edge number of the graph.以“ ”分隔。")
+    print(
+        "Please input the information of graph!\nthe vertex & edge number of the graph.以“ ”分隔。"
+    )
     n, m = map(int, input().split())
     graph = init_graph(n)
 
@@ -80,6 +82,8 @@ if __name__ == "__main__":
 
     if prev[end] is not None:
         path = print_path(prev, start, end)
-        print(f"{start + 1} --> {' --> '.join(map(lambda x: str(x + 1), path))}  min length is {dist[end]}")
+        print(
+            f"{start + 1} --> {' --> '.join(map(lambda x: str(x + 1), path))}  min length is {dist[end]}"
+        )
     else:
         print(f"从{start + 1}到{end + 1}没有路径。")
