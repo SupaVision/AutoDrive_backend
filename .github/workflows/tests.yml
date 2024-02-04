@@ -1,0 +1,39 @@
+name: Tests Workflow
+on:
+  workflow_call:
+    inputs:
+      python-versions:
+        required: true
+        type: string
+      operating-systems:
+        required: true
+        type: string
+    secrets:
+      codecov_token:
+        required: true
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    name: Run Tests / OS ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    strategy:
+      matrix:
+        python-version: ${{ fromJson(inputs.python-versions) }}
+        os: ${{ fromJson(inputs.operating-systems) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up Poetry
+        uses: abatilo/actions-poetry@v3.0.0
+        with:
+          poetry-version: 1.7.1
+      - run: poetry install
+      - run: poetry run tests
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.codecov_token }}
