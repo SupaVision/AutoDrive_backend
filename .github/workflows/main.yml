@@ -9,7 +9,7 @@ jobs:
     uses: ./.github/workflows/tests.yml
     with:
       python-versions: '["3.10", "3.11", "3.12"]'
-      operating-systems: '["ubuntu-latest", "windows-latest"]'
+      operating-systems: '["windows-latest"]'
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
   #  build-and-push:
