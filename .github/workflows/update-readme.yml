@@ -19,11 +19,12 @@ jobs:
       - name: Checkout CI branch or create it if not exists
         run: |
           git fetch origin
-          if git branch --list -r | grep origin/ "ci-auto-update"; then
-            git checkout "ci-auto-update"
+          if git branch --list -r | grep origin/ ci-auto-update; then
+            git checkout ci-auto-update
           else
-            git checkout -b "ci-auto-update"
-            git push --set-upstream origin "ci-auto-update"
+            git checkout -b ci-auto-update
+            git push --set-upstream origin ci-auto-update
+            git push --set-upstream origin ci-auto-update --force
           fi
 
       - name: Reset CI branch to match main branch
