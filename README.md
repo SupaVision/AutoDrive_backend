@@ -1,19 +1,7 @@
 
-## Introduction
-1. ci-pipeline
-    1. [build-and-push.yml](.github%2Fworkflows%2Fbuild-and-push.yml)
-   2. [main.yml](.github%2Fworkflows%2Fmain.yml)
-   3. [release.yml](.github%2Fworkflows%2Frelease.yml)
-   4. [test.yml](.github%2Fworkflows%2Ftest.yml)
-   5. [update-readme.yml](.github%2Fworkflows%2Fupdate-readme.yml)
-2. pytest
-   -  [poetry_scripts.py](poetry_scripts.py)
-3. poetry
-    - [pyproject.toml](pyproject.toml)
-4. pre-commit
-   - [.pre-commit-config.yaml](.pre-commit-config.yaml)
-5. [Dockerfile](Dockerfile)
-
+## Standard
+- clone 到本地的时候，无比再GitHub repo 先创建`dev-<username>`分支，然后再clone到本地,本地签出`dev-<username>`分支
+- 本地开发完成后，提交到`dev-<username>`分支，然后再提交PR到`main`分支
 
 
 
