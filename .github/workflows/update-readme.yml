@@ -23,7 +23,6 @@ jobs:
             git checkout ci-auto-update
           else
             git checkout -b ci-auto-update
-            git push --set-upstream origin ci-auto-update
             git push --set-upstream origin ci-auto-update --force
           fi
 
