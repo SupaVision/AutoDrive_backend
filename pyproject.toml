@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "py-project-template"
+name = "BreadcrumbsAutoDrive_backend"
 version = "0.1.0"
 description = ""
 authors = ["Atticuszz <1831768457@qq.com>"]
