@@ -1,8 +1,7 @@
 
 ## Standard
 - 提交规范
-**clone 到本地的时候，无比再GitHub repo 先创建`dev-<username>`分支，然后再clone到本地,本地签出`dev-<username>`分支**
-  1. 本地开发完成后，提交到`dev-<username>`分支，然后再提交PR到`main`分支
+  - clone 到本地的时候，无比再GitHub repo 先创建`dev-<username>`分支，然后再clone到本地,本地签出`dev-<username>`分支,本地开发完成后，提交到`dev-<username>`分支，然后再提交PR到`main`分支
   
 - 测试规范
   - 使用`pytest`进行测试，测试文件放在`tests`目录下，测试文件名以`test_`开头，测试函数名以`test_`开头, 测试类名以`Test`开头
