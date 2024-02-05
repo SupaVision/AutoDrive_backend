@@ -3,6 +3,7 @@
 #include <string.h>
 #define MAX_LEN 100
 #define INFINITE 1000
+// zsqgle
 
 typedef struct graph
 {
