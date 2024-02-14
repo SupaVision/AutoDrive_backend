@@ -1,4 +1,14 @@
 
+## init repo
+- recursive clone
+```bash
+git clone --recurse-submodules git@github.com:SupaVision/AutoDrive_backend.git
+```
+
+- pull submodules
+```bash
+git submodule update --init --recursive 
+```
 
 
 ## third-party-libs
