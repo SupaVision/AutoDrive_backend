@@ -1,0 +1,3 @@
+[submodule "thirdparty/NeuralRecon"]
+	path = thirdparty/NeuralRecon
+	url = git@github.com:SupaVision/NeuralRecon.git
