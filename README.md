@@ -9,7 +9,7 @@ git clone --recurse-submodules git@github.com:SupaVision/AutoDrive_backend.git
 ```bash
 git submodule update --init --recursive 
 ```
-
+![](./assets/NeuralRecon.png)
 
 ## third-party-libs
 ### [NeuralRecon](thirdparty%2FNeuralRecon)
