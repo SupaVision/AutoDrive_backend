@@ -1,0 +1,12 @@
+name: localization
+channels:
+  - pytorch
+  - defaults
+  - nvidia
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+    - open3d
