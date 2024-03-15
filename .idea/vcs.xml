@@ -2,6 +2,8 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/thirdparty/NeuralRecon" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdparty/SplaTAM" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdparty/SplaTAM/diff-gaussian-rasterization-w-depth.git" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../AutoDrive_frontend" vcs="Git" />
   </component>
 </project>

@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="Poetry (AutoDrive_backend)" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="localization" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="splatam" project-jdk-type="Python SDK" />
 </project>

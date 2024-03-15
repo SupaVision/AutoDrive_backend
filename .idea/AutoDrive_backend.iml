@@ -2,8 +2,11 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="localization" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="splatam" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="AutoDrive_frontend" />
+  </component>
+  <component name="SonarLintModuleSettings">
+    <option name="uniqueId" value="96fe674a-5e50-490b-8669-936491bac4f5" />
   </component>
 </module>
