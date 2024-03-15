@@ -1,3 +1,9 @@
 [submodule "thirdparty/NeuralRecon"]
 	path = thirdparty/NeuralRecon
 	url = git@github.com:SupaVision/NeuralRecon.git
+[submodule "thirdparty/SplaTAM"]
+	path = thirdparty/SplaTAM
+	url = git@github.com:SupaVision/SplaTAM.git
+[submodule "thirdparty/nerf-navigation"]
+	path = thirdparty/nerf-navigation
+	url = git@github.com:SupaVision/nerf-navigation.git
