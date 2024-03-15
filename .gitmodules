@@ -4,3 +4,6 @@
 [submodule "thirdparty/nerf-navigation"]
 	path = thirdparty/nerf-navigation
 	url = git@github.com:SupaVision/nerf-navigation.git
+[submodule "thirdparty/gaussian-splatting"]
+	path = thirdparty/gaussian-splatting
+	url = git@github.com:SupaVision/gaussian-splatting.git

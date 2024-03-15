@@ -4,6 +4,11 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/thirdparty/SplaTAM" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/thirdparty/SplaTAM/diff-gaussian-rasterization-w-depth.git" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdparty/gaussian-splatting" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdparty/gaussian-splatting/SIBR_viewers" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdparty/gaussian-splatting/submodules/diff-gaussian-rasterization" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdparty/gaussian-splatting/submodules/diff-gaussian-rasterization/third_party/glm" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdparty/gaussian-splatting/submodules/simple-knn" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/thirdparty/nerf-navigation" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../AutoDrive_frontend" vcs="Git" />
   </component>
