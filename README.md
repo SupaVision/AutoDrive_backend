@@ -9,6 +9,8 @@ git clone --recurse-submodules git@github.com:SupaVision/AutoDrive_backend.git
 
 ## Roadmap
 - [ ] pipeline of splaTAM
+  - [x] build config class for splaTAM
+  - [ ] separate splaTAM into modules
 
 
 
