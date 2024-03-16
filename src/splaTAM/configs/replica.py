@@ -27,8 +27,10 @@ class ReplicaConfig(BaseConfig):
     wandb: WandbConfig = field(
         default_factory=lambda: WandbConfig(name=super().run_name, group=group_name))  # 注意: 需要根据实际情况自定义'name'
     data: DataConfig = field(default_factory=lambda: DataConfig(sequence=scene_name,
-                                                                basedir=Path().cwd() / "data" / group_name,
-                                                                gradslam_data_cfg=Path().cwd() / "configs" / "data" / f"{group_name}.yaml",
+                                                                # TODO: fix the basedir
+                                                                basedir=Path(__file__).parent / "data" / group_name,
+                                                                gradslam_data_cfg=Path(
+                                                                    __file__).parent / "gradslam_cfg" / f"{group_name}.yaml",
                                                                 desired_image_height=680,
                                                                 desired_image_width=1200,
                                                                 num_frames=10))
