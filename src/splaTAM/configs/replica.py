@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .base import WandbConfig, DataConfig, TrackingConfig, LossWeights, LRates, PruningDict, MappingConfig, \
+from .base import WandbConfig, DataConfig, TrackingConfig, LRates, MappingConfig, \
     VisualizationConfig, BaseConfig
 
 __all__ = ["ReplicaConfig"]

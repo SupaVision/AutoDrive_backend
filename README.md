@@ -11,7 +11,8 @@ git clone --recurse-submodules git@github.com:SupaVision/AutoDrive_backend.git
 - [ ] pipeline of splaTAM
   - [x] build config class for splaTAM
   - [ ] separate splaTAM into modules
-
+  - [ ] dataset Matterport3d and situation
+  - [ ] (blender simulation)[https://docs.blender.org/api/current/info_quickstart.html]
 
 
 
