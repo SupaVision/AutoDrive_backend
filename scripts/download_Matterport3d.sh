@@ -16,5 +16,5 @@
 #conda activate mp3d
 
 # python download_mp.py --task habitat -o /home/atticuszz/DevSpace/python/AutoDrive_backend/Datasets
-
+# https://blog.csdn.net/qq_44100524/article/details/133967011
 wget -c http://kaldir.vc.in.tum.de/matterport/v1/tasks/mp3d_habitat.zip -O /home/atticuszz/DevSpace/python/AutoDrive_backend/Datasets/mp3d_habitat.zip

@@ -7,3 +7,6 @@
 [submodule "thirdparty/gaussian-splatting"]
 	path = thirdparty/gaussian-splatting
 	url = git@github.com:SupaVision/gaussian-splatting.git
+[submodule "thirdparty/Replica-Dataset"]
+	path = thirdparty/Replica-Dataset
+	url = git@github.com:facebookresearch/Replica-Dataset.git
