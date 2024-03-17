@@ -10,3 +10,6 @@
 [submodule "thirdparty/Replica-Dataset"]
 	path = thirdparty/Replica-Dataset
 	url = git@github.com:facebookresearch/Replica-Dataset.git
+[submodule "thirdparty/habitat-sim"]
+	path = thirdparty/habitat-sim
+	url = git@github.com:facebookresearch/habitat-sim.git
