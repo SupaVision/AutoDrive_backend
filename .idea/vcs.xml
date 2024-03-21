@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/tests/scene_datasets/habitat-test-scenes" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/tests/versioned_data/habitat_test_scenes" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/thirdparty/Replica-Dataset" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/thirdparty/SplaTAM" vcs="Git" />
@@ -11,6 +12,8 @@
     <mapping directory="$PROJECT_DIR$/thirdparty/gaussian-splatting/submodules/diff-gaussian-rasterization" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/thirdparty/gaussian-splatting/submodules/diff-gaussian-rasterization/third_party/glm" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/thirdparty/gaussian-splatting/submodules/simple-knn" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdparty/habitat-sim" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdparty/habitat-sim/data/replica_cad_dataset" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/thirdparty/nerf-navigation" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../AutoDrive_frontend" vcs="Git" />
   </component>
