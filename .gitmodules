@@ -13,6 +13,9 @@
 [submodule "thirdparty/habitat-sim"]
 	path = thirdparty/habitat-sim
 	url = git@github.com:facebookresearch/habitat-sim.git
-
-
-
+[submodule "thirdparty/gradslam"]
+	path = thirdparty/gradslam
+	url = git@github.com:SupaVision/chamferdist.git
+[submodule "thirdparty/chamferdist"]
+	path = thirdparty/chamferdist
+	url = git@github.com:SupaVision/chamferdist.git
