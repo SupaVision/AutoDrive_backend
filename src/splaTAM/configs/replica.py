@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .base import WandbConfig, DataConfig, TrackingConfig, LRates, MappingConfig, \
+from .base import WandbConfig, DataSetConfig, TrackingConfig, LRates, MappingConfig, \
     VisualizationConfig, BaseConfig
 
 __all__ = ["ReplicaConfig"]
@@ -26,14 +26,14 @@ class ReplicaConfig(BaseConfig):
     # 配置部分的实例化
     wandb: WandbConfig = field(
         default_factory=lambda: WandbConfig(name=super().run_name, group=group_name))  # 注意: 需要根据实际情况自定义'name'
-    data: DataConfig = field(default_factory=lambda: DataConfig(sequence=scene_name,
-                                                                # TODO: fix the basedir
-                                                                basedir=Path(__file__).parent / "data" / group_name,
-                                                                gradslam_data_cfg=Path(
+    data: DataSetConfig = field(default_factory=lambda: DataSetConfig(sequence=scene_name,
+                                                                      # TODO: fix the basedir
+                                                                      basedir=Path(__file__).parent / "data" / group_name,
+                                                                      gradslam_data_cfg=Path(
                                                                     __file__).parent / "gradslam_cfg" / f"{group_name}.yaml",
-                                                                desired_image_height=680,
-                                                                desired_image_width=1200,
-                                                                num_frames=10))
+                                                                      desired_image_height=680,
+                                                                      desired_image_width=1200,
+                                                                      num_frames=10))
     tracking: TrackingConfig = field(
         default_factory=lambda: TrackingConfig(num_iters=10, lrs=LRates(means3D=0.0,
                                                                         rgb_colors=0.0,

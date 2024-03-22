@@ -41,7 +41,7 @@ class WandbConfig:
 
 
 @dataclass
-class DataConfig:
+class DataSetConfig:
     sequence: str  # 数据集序列名, 必须自定义以匹配所使用的数据集
     basedir: Path
     gradslam_data_cfg: Path  # GradSLAM数据配置文件路径
@@ -51,6 +51,17 @@ class DataConfig:
     end: int = -1  # 序列结束的帧编号, -1表示使用整个序列
     stride: int = 1  # 读取帧的步长
     num_frames: int = -1  # 读取的总帧数, -1表示读取整个序列
+    ignore_bad = False
+    use_train_split = True
+    seperate_densification_res = False
+
+    @property
+    def densification_image_height(self):
+        return self.desired_image_height
+
+    @property
+    def densification_image_width(self):
+        return self.desired_image_width
 
 
 @dataclass
@@ -73,6 +84,8 @@ class LRates:
 @dataclass
 class TrackingConfig:
     lrs: LRates  # 学习率
+    tracking_image_height: int
+    tracking_image_width: int
     use_gt_poses: bool = False  # 是否使用地面真实姿态进行跟踪
     forward_prop: bool = True  # 是否前向传播姿态
     num_iters: int = 40  # 跟踪迭代次数
@@ -81,6 +94,14 @@ class TrackingConfig:
     use_l1: bool = True  # 是否使用L1损失
     ignore_outlier_depth_loss: bool = False  # 是否忽略深度异常值
     loss_weights: LossWeights = field(default_factory=lambda: LossWeights())  # 损失权重
+    use_depth_loss_thres = False
+    depth_loss_thres = 100000
+    visualize_tracking_loss = False
+    seperate_tracking_res = False
+
+    def set_image_size(self, height, width):
+        self.tracking_image_height = height
+        self.tracking_image_width = width
 
 
 # visualize_tracking_loss=False, # Visualize Tracking Diff Images

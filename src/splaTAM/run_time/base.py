@@ -5,14 +5,14 @@ from pathlib import Path
 from typing import Optional, Union, List
 from importlib.machinery import SourceFileLoader
 
-from ..configs.base import BaseConfig, WandbConfig, DataConfig, TrackingConfig, MappingConfig, VisualizationConfig
+from ..configs.base import BaseConfig, WandbConfig, DataSetConfig, TrackingConfig, MappingConfig, VisualizationConfig
 
 
 # 配置类等其他定义保持不变
 
 class SLAMBase:
     def __init__(self, config: Union[
-        BaseConfig, WandbConfig, DataConfig, TrackingConfig, MappingConfig, VisualizationConfig]):
+        BaseConfig, WandbConfig, DataSetConfig, TrackingConfig, MappingConfig, VisualizationConfig]):
         self.config = config
 
     def load_data(self):
