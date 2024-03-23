@@ -13,6 +13,7 @@ git clone --recurse-submodules git@github.com:SupaVision/AutoDrive_backend.git
   - [ ] separate splaTAM into modules
   - [ ] dataset Matterport3d and situation
   - [ ] (blender simulation)[https://docs.blender.org/api/current/info_quickstart.html]
+  - [ ] build dataset loader for replica
 - [ ] situation
   - [ ] habitat-sim not good quality
 
