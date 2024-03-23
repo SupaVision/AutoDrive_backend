@@ -10,8 +10,8 @@
     <mapping directory="$PROJECT_DIR$/thirdparty/chamferdist" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/thirdparty/gradslam" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/thirdparty/habitat-sim" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/thirdparty/habitat-sim/data/replica_cad_dataset" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/thirdparty/nerf-navigation" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/thirdparty/nice-slam" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../AutoDrive_frontend" vcs="Git" />
   </component>
 </project>
