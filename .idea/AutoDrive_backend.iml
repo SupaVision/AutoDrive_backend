@@ -8,6 +8,13 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="AutoDrive_frontend" />
   </component>
+  <component name="PackageRequirementsSettings">
+    <option name="requirementsPath" value="" />
+  </component>
+  <component name="PyDocumentationSettings">
+    <option name="format" value="NUMPY" />
+    <option name="myDocStringFormat" value="NumPy" />
+  </component>
   <component name="SonarLintModuleSettings">
     <option name="uniqueId" value="96fe674a-5e50-490b-8669-936491bac4f5" />
   </component>
