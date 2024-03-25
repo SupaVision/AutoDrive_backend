@@ -15,7 +15,7 @@ def convert_params_to_store(params):
 
 
 def group_name(file_name: str) -> str:
-    return file_name.split('.')[0]
+    return file_name.split(".")[0]
 
 
 def params2cpu(params):

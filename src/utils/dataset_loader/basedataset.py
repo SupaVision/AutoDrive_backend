@@ -8,25 +8,17 @@ A few parts of this code are adapted from NICE-SLAM
 https://github.com/cvg/nice-slam/blob/645b53af3dc95b4b348de70e759943f7228a61ca/src/utils/datasets.py
 """
 
-import abc
-import glob
-import os
-from pathlib import Path
-from torch.utils.data import Dataset
-from typing import Dict, List, Optional, Union
-
 import cv2
 import imageio
 import numpy as np
 import torch
-import yaml
-from natsort import natsorted
+from torch.utils.data import Dataset
 
-from .geometryutils import relative_transformation
 from . import datautils
+from .geometryutils import relative_transformation
 
 
-def to_scalar(inp: Union[np.ndarray, torch.Tensor, float]) -> Union[int, float]:
+def to_scalar(inp: np.ndarray | torch.Tensor | float) -> int | float:
     """
     Convert the input to a scalar
     """
@@ -78,7 +70,7 @@ def readEXR_onlydepth(filename):
     Returns:
         Y (numpy.array): Depth buffer in float32 format.
     """
-    # move the import here since only CoFusion needs these package
+    # move the import here since only confusion needs these package
     # sometimes installation of openexr is hard, you can run all other datasets
     # even without openexr
     import Imath
@@ -107,9 +99,9 @@ class GradSLAMDataset(Dataset):
     def __init__(
         self,
         config_dict,
-        stride: Optional[int] = 1,
-        start: Optional[int] = 0,
-        end: Optional[int] = -1,
+        stride: int | None = 1,
+        start: int | None = 0,
+        end: int | None = -1,
         desired_height: int = 480,
         desired_width: int = 640,
         channels_first: bool = False,
@@ -149,9 +141,11 @@ class GradSLAMDataset(Dataset):
         self.start = start
         self.end = end
         if start < 0:
-            raise ValueError("start must be positive. Got {0}.".format(stride))
+            raise ValueError(f"start must be positive. Got {stride}.")
         if not (end == -1 or end > start):
-            raise ValueError("end ({0}) must be -1 (use all images) or greater than start ({1})".format(end, start))
+            raise ValueError(
+                f"end ({end}) must be -1 (use all images) or greater than start ({start})"
+            )
 
         self.distortion = (
             np.array(config_dict["camera_params"]["distortion"])
@@ -159,7 +153,9 @@ class GradSLAMDataset(Dataset):
             else None
         )
         self.crop_size = (
-            config_dict["camera_params"]["crop_size"] if "crop_size" in config_dict["camera_params"] else None
+            config_dict["camera_params"]["crop_size"]
+            if "crop_size" in config_dict["camera_params"]
+            else None
         )
 
         self.crop_edge = None
@@ -171,7 +167,9 @@ class GradSLAMDataset(Dataset):
             raise ValueError("Number of color and depth images must be the same.")
         if self.load_embeddings:
             if len(self.color_paths) != len(self.embedding_paths):
-                raise ValueError("Mismatch between number of color images and number of embedding files.")
+                raise ValueError(
+                    "Mismatch between number of color images and number of embedding files."
+                )
         self.num_imgs = len(self.color_paths)
         self.poses = self.load_poses()
 
@@ -213,7 +211,7 @@ class GradSLAMDataset(Dataset):
         Args:
             color (np.ndarray): Raw input rgb image
 
-        Retruns:
+        Returns:
             np.ndarray: Preprocessed rgb image
 
         Shape:
@@ -257,7 +255,7 @@ class GradSLAMDataset(Dataset):
 
     def _preprocess_poses(self, poses: torch.Tensor):
         r"""Preprocesses the poses by setting first pose in a sequence to identity and computing the relative
-        homogenous transformation for all other poses.
+        homogeneous transformation for all other poses.
 
         Args:
             poses (torch.Tensor): Pose matrices to be preprocessed
@@ -314,7 +312,9 @@ class GradSLAMDataset(Dataset):
         depth = self._preprocess_depth(depth)
         depth = torch.from_numpy(depth)
 
-        K = datautils.scale_intrinsics(K, self.height_downsample_ratio, self.width_downsample_ratio)
+        K = datautils.scale_intrinsics(
+            K, self.height_downsample_ratio, self.width_downsample_ratio
+        )
         intrinsics = torch.eye(4).to(K)
         intrinsics[:3, :3] = K
 

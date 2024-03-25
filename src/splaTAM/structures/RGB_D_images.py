@@ -1,41 +1,50 @@
 import cv2
 import numpy as np
-from torch import Tensor
-from typing import Optional, Union
-
-from plotly.subplots import make_subplots
 import torch
+from plotly.subplots import make_subplots
+from torch import Tensor
 
-from .structutils import numpy_to_plotly_image
 from ..geometry.geometryutils import create_meshgrid
 from ..geometry.projutils import inverse_intrinsics
+from .structutils import numpy_to_plotly_image
 
 __all__ = ["RGBDImages"]
 
-from ..utils.geometry import normalize_image, set_channels_first, as_intrinsics_matrix
+from ..utils.geometry import normalize_image, set_channels_first
 
 
 class RGBDImage:
-    def __init__(self, rgb_image: np.ndarray,
-                 depth_image: np.ndarray,
-                 intrinsics: Tensor,
-                 pose: Optional[Tensor] = None,
-                 device: Union[torch.device, str, None] = None,
-                 size: Optional[tuple[int, int]] = None,
-                 scale: Optional[float] = None,
-                 *,
-                 pixel_pos: Optional[Tensor] = None):
+    def __init__(
+        self,
+        rgb_image: np.ndarray,
+        depth_image: np.ndarray,
+        intrinsics: Tensor,
+        pose: Tensor | None = None,
+        device: torch.device | str | None = None,
+        size: tuple[int, int] | None = None,
+        scale: float | None = None,
+        *,
+        pixel_pos: Tensor | None = None,
+    ):
         # type checks
         if not torch.is_tensor(intrinsics):
-            raise TypeError(f"Expected intrinsics to be of type tensor; got {type(intrinsics)}")
+            raise TypeError(
+                f"Expected intrinsics to be of type tensor; got {type(intrinsics)}"
+            )
         if pose is not None and not torch.is_tensor(pose):
             raise TypeError(f"Expected poses to be of type tensor; got {type(pose)}")
         if pixel_pos is not None and not torch.is_tensor(pixel_pos):
-            raise TypeError(f"Expected pixel_pos to be of type tensor; got {type(pixel_pos)}")
+            raise TypeError(
+                f"Expected pixel_pos to be of type tensor; got {type(pixel_pos)}"
+            )
         if not isinstance(rgb_image, np.ndarray):
-            raise TypeError(f"Expected rgb_image to be of type np.ndarray; got {type(rgb_image)}")
+            raise TypeError(
+                f"Expected rgb_image to be of type np.ndarray; got {type(rgb_image)}"
+            )
         if not isinstance(depth_image, np.ndarray):
-            raise TypeError(f"Expected depth_image to be of type np.ndarray; got {type(depth_image)}")
+            raise TypeError(
+                f"Expected depth_image to be of type np.ndarray; got {type(depth_image)}"
+            )
         if not isinstance(size, tuple) and size is not None:
             raise TypeError(f"Expected size to be of type tuple; got {type(size)}")
         if not isinstance(scale, float) and scale is not None:
@@ -43,11 +52,17 @@ class RGBDImage:
 
         # input ndim checks
         if rgb_image.ndim != 5:
-            raise ValueError(f"rgb_image should have ndim=5, but had ndim={rgb_image.ndim}")
+            raise ValueError(
+                f"rgb_image should have ndim=5, but had ndim={rgb_image.ndim}"
+            )
         if depth_image.ndim != 5:
-            raise ValueError(f"depth_image should have ndim=5, but had ndim={depth_image.ndim}")
+            raise ValueError(
+                f"depth_image should have ndim=5, but had ndim={depth_image.ndim}"
+            )
         if intrinsics.ndim != 4:
-            raise ValueError(f"intrinsics should have ndim=4, but had ndim={intrinsics.ndim}")
+            raise ValueError(
+                f"intrinsics should have ndim=4, but had ndim={intrinsics.ndim}"
+            )
         # NOTE: pose ndim wrong
         if pose is not None and pose.ndim != 4:
             raise ValueError(f"poses should have ndim=4, but had ndim={pose.ndim}")
@@ -55,21 +70,31 @@ class RGBDImage:
         self._scale = scale
         self._device = device
         # NOTE: size may br wrong
-        self._size = size if size is not None else (depth_image.shape[2], depth_image.shape[3])
+        self._size = (
+            size if size is not None else (depth_image.shape[2], depth_image.shape[3])
+        )
 
         self._rgb_image = self._preprocess_color(rgb_image)
         self._depth_image = self._preprocess_depth(depth_image)
         # check rgb and depth shape
         if self._rgb_image.shape[:2] != self._depth_image.shape[:2]:
-            raise ValueError("rgb_image and depth_image must have same batch size and sequence length")
+            raise ValueError(
+                "rgb_image and depth_image must have same batch size and sequence length"
+            )
         self._intrinsics = intrinsics.to(self._device)
 
         pose[:3, 3] *= self._scale
         self._poses = pose.to(self._device) if pose is not None else None
         self._pixel_pos = pixel_pos.to(self._device) if pixel_pos is not None else None
 
-    def _preprocess_color(self, rgb_image: np.ndarray, *, normalize_color: bool = True,
-                          channels_first: bool = True, distortion: bool = False) -> Tensor:
+    def _preprocess_color(
+        self,
+        rgb_image: np.ndarray,
+        *,
+        normalize_color: bool = True,
+        channels_first: bool = True,
+        distortion: bool = False,
+    ) -> Tensor:
         """Preprocesses the color image by resizing to :math:`(H, W, C)`, (optionally) normalizing values to
         :math:`[0, 1]`, and (optionally) using channels first :math:`(C, H, W)` representation.
         Args:
@@ -96,8 +121,9 @@ class RGBDImage:
             color = cv2.undistort(color, self._intrinsics, distortion)
         return torch.from_numpy(color).to(self._device)
 
-    def _preprocess_depth(self, depth_image: np.ndarray,
-                          channels_first: bool = True) -> Tensor:
+    def _preprocess_depth(
+        self, depth_image: np.ndarray, channels_first: bool = True
+    ) -> Tensor:
         """Preprocesses the depth image by resizing, adding channel dimension, and scaling values to meters. Optionally
         converts depth from channels last :math:`(H, W, 1)` to channels first :math:`(1, H, W)` representation.
         Args:
@@ -175,39 +201,53 @@ class RGBDImages:
     ]
 
     def __init__(
-            self,
-            rgb_image: torch.Tensor,
-            depth_image: torch.Tensor,
-            intrinsics: torch.Tensor,
-            poses: Optional[torch.Tensor] = None,
-            channels_first: bool = True,
-            device: Union[torch.device, str, None] = None,
-            *,
-            pixel_pos: Optional[torch.Tensor] = None,
+        self,
+        rgb_image: torch.Tensor,
+        depth_image: torch.Tensor,
+        intrinsics: torch.Tensor,
+        poses: torch.Tensor | None = None,
+        channels_first: bool = True,
+        device: torch.device | str | None = None,
+        *,
+        pixel_pos: torch.Tensor | None = None,
     ):
         super().__init__()
 
         # input type checks
         if not torch.is_tensor(rgb_image):
-            raise TypeError(f"Expected rgb_image to be of type tensor; got {type(rgb_image)}")
+            raise TypeError(
+                f"Expected rgb_image to be of type tensor; got {type(rgb_image)}"
+            )
         if not torch.is_tensor(depth_image):
-            raise TypeError(f"Expected depth_image to be of type tensor; got {type(depth_image)}")
+            raise TypeError(
+                f"Expected depth_image to be of type tensor; got {type(depth_image)}"
+            )
         if not torch.is_tensor(intrinsics):
-            raise TypeError(f"Expected intrinsics to be of type tensor; got {type(intrinsics)}")
+            raise TypeError(
+                f"Expected intrinsics to be of type tensor; got {type(intrinsics)}"
+            )
         if poses is not None and not torch.is_tensor(poses):
             raise TypeError(f"Expected poses to be of type tensor; got {type(poses)}")
         if pixel_pos is not None and not torch.is_tensor(pixel_pos):
-            raise TypeError(f"Expected pixel_pos to be of type tensor; got {type(pixel_pos)}")
+            raise TypeError(
+                f"Expected pixel_pos to be of type tensor; got {type(pixel_pos)}"
+            )
 
         self._channels_first = channels_first
 
         # input ndim checks
         if rgb_image.ndim != 5:
-            raise ValueError(f"rgb_image should have ndim=5, but had ndim={rgb_image.ndim}")
+            raise ValueError(
+                f"rgb_image should have ndim=5, but had ndim={rgb_image.ndim}"
+            )
         if depth_image.ndim != 5:
-            raise ValueError(f"depth_image should have ndim=5, but had ndim={depth_image.ndim}")
+            raise ValueError(
+                f"depth_image should have ndim=5, but had ndim={depth_image.ndim}"
+            )
         if intrinsics.ndim != 4:
-            raise ValueError(f"intrinsics should have ndim=4, but had ndim={intrinsics.ndim}")
+            raise ValueError(
+                f"intrinsics should have ndim=4, but had ndim={intrinsics.ndim}"
+            )
         if poses is not None and poses.ndim != 4:
             raise ValueError(f"poses should have ndim=4, but had ndim={poses.ndim}")
 
@@ -219,7 +259,7 @@ class RGBDImages:
         self._poses_shape = (*rgb_image.shape[:2], 4, 4)
         self._pixel_pos_shape = (
             *rgb_image.shape[: self.cdim],
-            *rgb_image.shape[self.cdim + 1:],
+            *rgb_image.shape[self.cdim + 1 :],
             3,
         )
 
@@ -301,13 +341,13 @@ class RGBDImages:
             new_rgb = self._rgb_image[_index_slices[0], _index_slices[1]]
             if new_rgb.shape[0] == 0:
                 raise IndexError(
-                    "Incorrect indexing at dimension 0, make sure range is within 0 and {0}".format(
+                    "Incorrect indexing at dimension 0, make sure range is within 0 and {}".format(
                         self._B
                     )
                 )
             if new_rgb.shape[1] == 0:
                 raise IndexError(
-                    "Incorrect indexing at dimension 1, make sure range is within 0 and {0}".format(
+                    "Incorrect indexing at dimension 1, make sure range is within 0 and {}".format(
                         self._L
                     )
                 )
@@ -557,7 +597,7 @@ class RGBDImages:
         self._global_normal_map = None
 
     def detach(self):
-        r"""Detachs RGBDImages object. All internal tensors are detached individually.
+        r"""Detaches RGBDImages object. All internal tensors are detached individually.
 
         Returns:
             gradslam.RGBDImages: detached gradslam.RGBDImages object
@@ -590,7 +630,7 @@ class RGBDImages:
                 setattr(other, k, v.clone())
         return other
 
-    def to(self, device: Union[torch.device, str], copy: bool = False):
+    def to(self, device: torch.device | str, copy: bool = False):
         r"""Match functionality of torch.Tensor.to(device)
         If copy = True or the self Tensor is on a different device, the returned tensor is a copy of self with the
         desired torch.device.
@@ -712,7 +752,7 @@ class RGBDImages:
 
     @staticmethod
     def _permute_if_not_None(
-            tensor: Optional[torch.Tensor], ordering: tuple, contiguous: bool = True
+        tensor: torch.Tensor | None, ordering: tuple, contiguous: bool = True
     ):
         r"""Permutes input if it is not None based on given ordering
 
@@ -759,13 +799,13 @@ class RGBDImages:
         # Add an extra channel of ones to meshgrid for z values
         if self.channels_first:
             self._vertex_map = (
-                    torch.einsum("bsjc,bshwc->bsjhw", Kinv, self._pixel_pos)
-                    * self._depth_image
+                torch.einsum("bsjc,bshwc->bsjhw", Kinv, self._pixel_pos)
+                * self._depth_image
             )
         else:
             self._vertex_map = (
-                    torch.einsum("bsjc,bshwc->bshwj", Kinv, self._pixel_pos)
-                    * self._depth_image
+                torch.einsum("bsjc,bshwc->bshwj", Kinv, self._pixel_pos)
+                * self._depth_image
             )
         # zero out missing depth values
         self._vertex_map = self._vertex_map * self.valid_depth_mask.to(
@@ -809,17 +849,17 @@ class RGBDImages:
         if self.channels_first:
             dhoriz[..., :-1] = self.vertex_map[..., 1:] - self.vertex_map[..., :-1]
             dverti[..., :-1, :] = (
-                    self.vertex_map[..., 1:, :] - self.vertex_map[..., :-1, :]
+                self.vertex_map[..., 1:, :] - self.vertex_map[..., :-1, :]
             )
             dhoriz[..., -1] = dhoriz[..., -2]
             dverti[..., -1, :] = dverti[..., -2, :]
             dim = 2
         else:
             dhoriz[..., :-1, :] = (
-                    self.vertex_map[..., 1:, :] - self.vertex_map[..., :-1, :]
+                self.vertex_map[..., 1:, :] - self.vertex_map[..., :-1, :]
             )
             dverti[..., :-1, :, :] = (
-                    self.vertex_map[..., 1:, :, :] - self.vertex_map[..., :-1, :, :]
+                self.vertex_map[..., 1:, :, :] - self.vertex_map[..., :-1, :, :]
             )
             dhoriz[..., -1, :] = dhoriz[..., -2, :]
             dverti[..., -1, :, :] = dverti[..., -2, :, :]
@@ -837,7 +877,7 @@ class RGBDImages:
         )
 
     def _compute_global_normal_map(self):
-        r"""Coverts a batch of local noraml maps into a batch of global normal maps."""
+        r"""Coverts a batch of local normal maps into a batch of global normal maps."""
         if self._poses is None:
             self._global_normal_map = self.normal_map.clone()
             return
@@ -856,11 +896,11 @@ class RGBDImages:
             )
 
     def plotly(
-            self,
-            index: int,
-            include_depth: bool = True,
-            as_figure: bool = True,
-            ms_per_frame: int = 50,
+        self,
+        index: int,
+        include_depth: bool = True,
+        as_figure: bool = True,
+        ms_per_frame: int = 50,
     ):
         r"""Converts `index`-th sequence of rgbd images to either a `plotly.graph_objects.Figure` or a
         list of dicts containing `plotly.graph_objects.Image` objects of rgb and (optionally) depth images:
@@ -893,7 +933,7 @@ class RGBDImages:
             returns a list of dicts (`frames`).
         """
         if not isinstance(index, int):
-            raise TypeError("Index should be int, but was {}.".format(type(index)))
+            raise TypeError(f"Index should be int, but was {type(index)}.")
 
         def frame_args(duration):
             return {
@@ -1003,7 +1043,7 @@ class RGBDImages:
             shape (tuple): Expected shape of value
         """
         if not isinstance(value, torch.Tensor):
-            raise TypeError("value must be torch.Tensor. Got {}".format(type(value)))
+            raise TypeError(f"value must be torch.Tensor. Got {type(value)}")
         if value.shape != shape:
             msg = "Expected value to have shape {0}. Got {1} instead"
             raise ValueError(msg.format(shape, value.shape))

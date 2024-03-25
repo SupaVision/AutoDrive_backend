@@ -1,7 +1,5 @@
 import glob
 import os
-from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -16,14 +14,14 @@ class ReplicaDataset(GradSLAMDataset):
         config_dict,
         basedir,
         sequence,
-        stride: Optional[int] = None,
-        start: Optional[int] = 0,
-        end: Optional[int] = -1,
-        desired_height: Optional[int] = 480,
-        desired_width: Optional[int] = 640,
-        load_embeddings: Optional[bool] = False,
-        embedding_dir: Optional[str] = "embeddings",
-        embedding_dim: Optional[int] = 512,
+        stride: int | None = None,
+        start: int | None = 0,
+        end: int | None = -1,
+        desired_height: int | None = 480,
+        desired_width: int | None = 640,
+        load_embeddings: bool | None = False,
+        embedding_dir: str | None = "embeddings",
+        embedding_dim: int | None = 512,
         **kwargs,
     ):
         self.input_folder = os.path.join(basedir, sequence)
@@ -46,12 +44,14 @@ class ReplicaDataset(GradSLAMDataset):
         depth_paths = natsorted(glob.glob(f"{self.input_folder}/results/depth*.png"))
         embedding_paths = None
         if self.load_embeddings:
-            embedding_paths = natsorted(glob.glob(f"{self.input_folder}/{self.embedding_dir}/*.pt"))
+            embedding_paths = natsorted(
+                glob.glob(f"{self.input_folder}/{self.embedding_dir}/*.pt")
+            )
         return color_paths, depth_paths, embedding_paths
 
     def load_poses(self):
         poses = []
-        with open(self.pose_path, "r") as f:
+        with open(self.pose_path) as f:
             lines = f.readlines()
         for i in range(self.num_imgs):
             line = lines[i]
@@ -65,22 +65,23 @@ class ReplicaDataset(GradSLAMDataset):
     def read_embedding_from_file(self, embedding_file_path):
         embedding = torch.load(embedding_file_path)
         return embedding.permute(0, 2, 3, 1)  # (1, H, W, embedding_dim)
-    
+
+
 class ReplicaV2Dataset(GradSLAMDataset):
     def __init__(
         self,
         config_dict,
         basedir,
         sequence,
-        use_train_split: Optional[bool] = True,
-        stride: Optional[int] = None,
-        start: Optional[int] = 0,
-        end: Optional[int] = -1,
-        desired_height: Optional[int] = 480,
-        desired_width: Optional[int] = 640,
-        load_embeddings: Optional[bool] = False,
-        embedding_dir: Optional[str] = "embeddings",
-        embedding_dim: Optional[int] = 512,
+        use_train_split: bool | None = True,
+        stride: int | None = None,
+        start: int | None = 0,
+        end: int | None = -1,
+        desired_height: int | None = 480,
+        desired_width: int | None = 640,
+        load_embeddings: bool | None = False,
+        embedding_dir: str | None = "embeddings",
+        embedding_dim: int | None = 512,
         **kwargs,
     ):
         self.use_train_split = use_train_split
@@ -112,23 +113,31 @@ class ReplicaV2Dataset(GradSLAMDataset):
         else:
             first_train_color_path = f"{self.train_input_folder}/rgb/rgb_0.png"
             first_train_depth_path = f"{self.train_input_folder}/depth/depth_0.png"
-            color_paths = [first_train_color_path] + natsorted(glob.glob(f"{self.input_folder}/rgb/rgb_*.png"))
-            depth_paths = [first_train_depth_path] + natsorted(glob.glob(f"{self.input_folder}/depth/depth_*.png"))
+            color_paths = [first_train_color_path] + natsorted(
+                glob.glob(f"{self.input_folder}/rgb/rgb_*.png")
+            )
+            depth_paths = [first_train_depth_path] + natsorted(
+                glob.glob(f"{self.input_folder}/depth/depth_*.png")
+            )
         embedding_paths = None
         if self.load_embeddings:
-            embedding_paths = natsorted(glob.glob(f"{self.input_folder}/{self.embedding_dir}/*.pt"))
+            embedding_paths = natsorted(
+                glob.glob(f"{self.input_folder}/{self.embedding_dir}/*.pt")
+            )
         return color_paths, depth_paths, embedding_paths
 
     def load_poses(self):
         poses = []
         if not self.use_train_split:
-            with open(self.train_pose_path, "r") as f:
+            with open(self.train_pose_path) as f:
                 train_lines = f.readlines()
             first_train_frame_line = train_lines[0]
-            first_train_frame_c2w = np.array(list(map(float, first_train_frame_line.split()))).reshape(4, 4)
+            first_train_frame_c2w = np.array(
+                list(map(float, first_train_frame_line.split()))
+            ).reshape(4, 4)
             first_train_frame_c2w = torch.from_numpy(first_train_frame_c2w).float()
             poses.append(first_train_frame_c2w)
-        with open(self.pose_path, "r") as f:
+        with open(self.pose_path) as f:
             lines = f.readlines()
         if self.use_train_split:
             num_poses = self.num_imgs
@@ -146,4 +155,3 @@ class ReplicaV2Dataset(GradSLAMDataset):
     def read_embedding_from_file(self, embedding_file_path):
         embedding = torch.load(embedding_file_path)
         return embedding.permute(0, 2, 3, 1)  # (1, H, W, embedding_dim)
-    

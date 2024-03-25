@@ -1,9 +1,19 @@
 import torch
 
 
-def report_progress(params, tracking_curr_data, num_batches, progress_bar, iter_time_idx,
-                    sil_thres=0.5, tracking=False, wandb_run=None, wandb_step=None, wandb_save_qual=False,
-                    global_logging=False):
+def report_progress(
+    params,
+    tracking_curr_data,
+    num_batches,
+    progress_bar,
+    iter_time_idx,
+    sil_thres=0.5,
+    tracking=False,
+    wandb_run=None,
+    wandb_step=None,
+    wandb_save_qual=False,
+    global_logging=False,
+):
     """
     Report the progress of the current iteration.
 
@@ -26,49 +36,68 @@ def report_progress(params, tracking_curr_data, num_batches, progress_bar, iter_
     # Get the current time index
     time_idx = iter_time_idx
 
-
-    if time_idx == 0 or (time_idx + 1) % config['report_global_progress_every'] == 0:
+    if time_idx == 0 or (time_idx + 1) % config["report_global_progress_every"] == 0:
         try:
             # Report Final Tracking Progress
             progress_bar = tqdm(range(1), desc=f"Tracking Result Time Step: {time_idx}")
             with torch.no_grad():
-                if config['use_wandb']:
-                    report_progress(params, tracking_curr_data, 1, progress_bar, iter_time_idx,
-                                    sil_thres=config['tracking']['sil_thres'], tracking=True,
-                                    wandb_run=wandb_run, wandb_step=wandb_time_step,
-                                    wandb_save_qual=config['wandb']['save_qual'], global_logging=True)
+                if config["use_wandb"]:
+                    report_progress(
+                        params,
+                        tracking_curr_data,
+                        1,
+                        progress_bar,
+                        iter_time_idx,
+                        sil_thres=config["tracking"]["sil_thres"],
+                        tracking=True,
+                        wandb_run=wandb_run,
+                        wandb_step=wandb_time_step,
+                        wandb_save_qual=config["wandb"]["save_qual"],
+                        global_logging=True,
+                    )
                 else:
-                    report_progress(params, tracking_curr_data, 1, progress_bar, iter_time_idx,
-                                    sil_thres=config['tracking']['sil_thres'], tracking=True)
+                    report_progress(
+                        params,
+                        tracking_curr_data,
+                        1,
+                        progress_bar,
+                        iter_time_idx,
+                        sil_thres=config["tracking"]["sil_thres"],
+                        tracking=True,
+                    )
             progress_bar.close()
         except:
             ckpt_output_dir = os.path.join(config["workdir"], config["run_name"])
             save_params_ckpt(params, ckpt_output_dir, time_idx)
-            print('Failed to evaluate trajectory.')
+            print("Failed to evaluate trajectory.")
 
 
 def report_loss(losses, wandb_run, wandb_step, tracking=False, mapping=False):
     # Update loss dict
-    loss_dict = {'Loss': losses['loss'].item(),
-                 'Image Loss': losses['im'].item(),
-                 'Depth Loss': losses['depth'].item(), }
+    loss_dict = {
+        "Loss": losses["loss"].item(),
+        "Image Loss": losses["im"].item(),
+        "Depth Loss": losses["depth"].item(),
+    }
     if tracking:
         tracking_loss_dict = {}
         for k, v in loss_dict.items():
             tracking_loss_dict[f"Per Iteration Tracking/{k}"] = v
-        tracking_loss_dict['Per Iteration Tracking/step'] = wandb_step
+        tracking_loss_dict["Per Iteration Tracking/step"] = wandb_step
         wandb_run.log(tracking_loss_dict)
     elif mapping:
         mapping_loss_dict = {}
         for k, v in loss_dict.items():
             mapping_loss_dict[f"Per Iteration Mapping/{k}"] = v
-        mapping_loss_dict['Per Iteration Mapping/step'] = wandb_step
+        mapping_loss_dict["Per Iteration Mapping/step"] = wandb_step
         wandb_run.log(mapping_loss_dict)
     else:
         frame_opt_loss_dict = {}
         for k, v in loss_dict.items():
             frame_opt_loss_dict[f"Per Iteration Current Frame Optimization/{k}"] = v
-        frame_opt_loss_dict['Per Iteration Current Frame Optimization/step'] = wandb_step
+        frame_opt_loss_dict["Per Iteration Current Frame Optimization/step"] = (
+            wandb_step
+        )
         wandb_run.log(frame_opt_loss_dict)
 
     # Increment wandb step

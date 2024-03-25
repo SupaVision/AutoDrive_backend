@@ -15,7 +15,7 @@ def load_dataset_config(path, default_path=None):
 
     """
     # load configuration from file itself
-    with open(path, "r") as f:
+    with open(path) as f:
         cfg_special = yaml.full_load(f)
 
     # check if we should inherit from a config
@@ -26,7 +26,7 @@ def load_dataset_config(path, default_path=None):
     if inherit_from is not None:
         cfg = load_dataset_config(inherit_from, default_path)
     elif default_path is not None:
-        with open(default_path, "r") as f:
+        with open(default_path) as f:
             cfg = yaml.full_load(f)
     else:
         cfg = dict()

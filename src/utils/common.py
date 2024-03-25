@@ -1,18 +1,9 @@
-import logging
-
-import warnings
-
-from typing import Union
-
 import numpy as np
 import torch
 import torch.nn.functional as F
 
 
-
-
-
-def sample_pdf(bins, weights, N_samples, det=False, device='cuda:0'):
+def sample_pdf(bins, weights, N_samples, det=False, device="cuda:0"):
     """
     Hierarchical sampling in NeRF paper (section 5.2).
 
@@ -26,7 +17,7 @@ def sample_pdf(bins, weights, N_samples, det=False, device='cuda:0'):
 
     # Take uniform samples
     if det:
-        u = torch.linspace(0., 1., steps=N_samples)
+        u = torch.linspace(0.0, 1.0, steps=N_samples)
         u = u.expand(list(cdf.shape[:-1]) + [N_samples])
     else:
         u = torch.rand(list(cdf.shape[:-1]) + [N_samples])
@@ -42,7 +33,8 @@ def sample_pdf(bins, weights, N_samples, det=False, device='cuda:0'):
         # you need to manually install from
         # https://github.com/aliutkus/torchsearchsorted
         from torchsearchsorted import searchsorted
-        inds = searchsorted(cdf, u, side='right')
+
+        inds = searchsorted(cdf, u, side="right")
     below = torch.max(torch.zeros_like(inds - 1), inds - 1)
     above = torch.min((cdf.shape[-1] - 1) * torch.ones_like(inds), inds)
     inds_g = torch.stack([below, above], -1)  # (batch, N_samples, 2)
@@ -51,7 +43,7 @@ def sample_pdf(bins, weights, N_samples, det=False, device='cuda:0'):
     cdf_g = torch.gather(cdf.unsqueeze(1).expand(matched_shape), 2, inds_g)
     bins_g = torch.gather(bins.unsqueeze(1).expand(matched_shape), 2, inds_g)
 
-    denom = (cdf_g[..., 1] - cdf_g[..., 0])
+    denom = cdf_g[..., 1] - cdf_g[..., 0]
     denom = torch.where(denom < 1e-5, torch.ones_like(denom), denom)
     t = (u - cdf_g[..., 0]) / denom
     samples = bins_g[..., 0] + t * (bins_g[..., 1] - bins_g[..., 0])
@@ -64,7 +56,7 @@ def random_select(l, k):
     Random select k values from 0..l.
 
     """
-    return list(np.random.permutation(np.array(range(l)))[:min(l, k)])
+    return list(np.random.permutation(np.array(range(l)))[: min(l, k)])
 
 
 def get_rays_from_uv(i, j, c2w, H, W, fx, fy, cx, cy, device):
@@ -75,8 +67,9 @@ def get_rays_from_uv(i, j, c2w, H, W, fx, fy, cx, cy, device):
     if isinstance(c2w, np.ndarray):
         c2w = torch.from_numpy(c2w).to(device)
 
-    dirs = torch.stack(
-        [(i - cx) / fx, -(j - cy) / fy, -torch.ones_like(i)], -1).to(device)
+    dirs = torch.stack([(i - cx) / fx, -(j - cy) / fy, -torch.ones_like(i)], -1).to(
+        device
+    )
     dirs = dirs.reshape(-1, 1, 3)
     # Rotate ray directions from camera frame to the world frame
     # dot product, equals to: [c2w.dot(dir) for dir in dirs]
@@ -85,7 +78,7 @@ def get_rays_from_uv(i, j, c2w, H, W, fx, fy, cx, cy, device):
     return rays_o, rays_d
 
 
-def select_uv(i, j, n, depth, color, device='cuda:0'):
+def select_uv(i, j, n, depth, color, device="cuda:0"):
     """
     Select n uv from dense uv.
 
@@ -103,15 +96,17 @@ def select_uv(i, j, n, depth, color, device='cuda:0'):
     return i, j, depth, color
 
 
-def get_sample_uv(H0, H1, W0, W1, n, depth, color, device='cuda:0'):
+def get_sample_uv(H0, H1, W0, W1, n, depth, color, device="cuda:0"):
     """
     Sample n uv coordinates from an image region H0..H1, W0..W1
 
     """
     depth = depth[H0:H1, W0:W1]
     color = color[H0:H1, W0:W1]
-    i, j = torch.meshgrid(torch.linspace(
-        W0, W1 - 1, W1 - W0).to(device), torch.linspace(H0, H1 - 1, H1 - H0).to(device))
+    i, j = torch.meshgrid(
+        torch.linspace(W0, W1 - 1, W1 - W0).to(device),
+        torch.linspace(H0, H1 - 1, H1 - H0).to(device),
+    )
     i = i.t()  # transpose
     j = j.t()
     i, j, depth, color = select_uv(i, j, n, depth, color, device=device)
@@ -125,7 +120,8 @@ def get_samples(H0, H1, W0, W1, n, H, W, fx, fy, cx, cy, c2w, depth, color, devi
 
     """
     i, j, sample_depth, sample_color = get_sample_uv(
-        H0, H1, W0, W1, n, depth, color, device=device)
+        H0, H1, W0, W1, n, depth, color, device=device
+    )
     rays_o, rays_d = get_rays_from_uv(i, j, c2w, H, W, fx, fy, cx, cy, device)
     return rays_o, rays_d, sample_depth, sample_color
 
@@ -144,15 +140,15 @@ def quad2rotation(quad):
     qr, qi, qj, qk = quad[:, 0], quad[:, 1], quad[:, 2], quad[:, 3]
     two_s = 2.0 / (quad * quad).sum(-1)
     rot_mat = torch.zeros(bs, 3, 3).to(quad.get_device())
-    rot_mat[:, 0, 0] = 1 - two_s * (qj ** 2 + qk ** 2)
+    rot_mat[:, 0, 0] = 1 - two_s * (qj**2 + qk**2)
     rot_mat[:, 0, 1] = two_s * (qi * qj - qk * qr)
     rot_mat[:, 0, 2] = two_s * (qi * qk + qj * qr)
     rot_mat[:, 1, 0] = two_s * (qi * qj + qk * qr)
-    rot_mat[:, 1, 1] = 1 - two_s * (qi ** 2 + qk ** 2)
+    rot_mat[:, 1, 1] = 1 - two_s * (qi**2 + qk**2)
     rot_mat[:, 1, 2] = two_s * (qj * qk - qi * qr)
     rot_mat[:, 2, 0] = two_s * (qi * qk - qj * qr)
     rot_mat[:, 2, 1] = two_s * (qj * qk + qi * qr)
-    rot_mat[:, 2, 2] = 1 - two_s * (qi ** 2 + qj ** 2)
+    rot_mat[:, 2, 2] = 1 - two_s * (qi**2 + qj**2)
     return rot_mat
 
 
@@ -184,6 +180,7 @@ def get_tensor_from_camera(RT, Tquad=False):
             gpu_id = RT.get_device()
         RT = RT.numpy()
     from mathutils import Matrix
+
     R, T = RT[:3, :3], RT[:3, 3]
     rot = Matrix(R)
     quad = rot.to_quaternion()
@@ -197,7 +194,7 @@ def get_tensor_from_camera(RT, Tquad=False):
     return tensor
 
 
-def raw2outputs_nerf_color(raw, z_vals, rays_d, occupancy=False, device='cuda:0'):
+def raw2outputs_nerf_color(raw, z_vals, rays_d, occupancy=False, device="cuda:0"):
     """
     Transforms model's predictions to semantically meaningful values.
 
@@ -216,13 +213,14 @@ def raw2outputs_nerf_color(raw, z_vals, rays_d, occupancy=False, device='cuda:0'
     """
 
     def raw2alpha(raw, dists, act_fn=F.relu):
-        return 1. - \
-            torch.exp(-act_fn(raw) * dists)
+        return 1.0 - torch.exp(-act_fn(raw) * dists)
 
     dists = z_vals[..., 1:] - z_vals[..., :-1]
     dists = dists.float()
-    dists = torch.cat([dists, torch.Tensor([1e10]).float().to(
-        device).expand(dists[..., :1].shape)], -1)  # [N_rays, N_samples]
+    dists = torch.cat(
+        [dists, torch.Tensor([1e10]).float().to(device).expand(dists[..., :1].shape)],
+        -1,
+    )  # [N_rays, N_samples]
 
     # different ray angle corresponds to different unit length
     dists = dists * torch.norm(rays_d[..., None, :], dim=-1)
@@ -234,11 +232,22 @@ def raw2outputs_nerf_color(raw, z_vals, rays_d, occupancy=False, device='cuda:0'
         # original nerf, volume density
         alpha = raw2alpha(raw[..., -1], dists)  # (N_rays, N_samples)
 
-    weights = alpha.float() * torch.cumprod(torch.cat([torch.ones((alpha.shape[0], 1)).to(
-        device).float(), (1. - alpha + 1e-10).float()], -1).float(), -1)[:, :-1]
+    weights = (
+        alpha.float()
+        * torch.cumprod(
+            torch.cat(
+                [
+                    torch.ones((alpha.shape[0], 1)).to(device).float(),
+                    (1.0 - alpha + 1e-10).float(),
+                ],
+                -1,
+            ).float(),
+            -1,
+        )[:, :-1]
+    )
     rgb_map = torch.sum(weights[..., None] * rgb, -2)  # (N_rays, 3)
     depth_map = torch.sum(weights * z_vals, -1)  # (N_rays)
-    tmp = (z_vals - depth_map.unsqueeze(-1))  # (N_rays, N_samples)
+    tmp = z_vals - depth_map.unsqueeze(-1)  # (N_rays, N_samples)
     depth_var = torch.sum(weights * tmp * tmp, dim=1)  # (N_rays)
     return depth_map, depth_var, rgb_map, weights
 
@@ -254,8 +263,9 @@ def get_rays(H, W, fx, fy, cx, cy, c2w, device):
     i, j = torch.meshgrid(torch.linspace(0, W - 1, W), torch.linspace(0, H - 1, H))
     i = i.t()  # transpose
     j = j.t()
-    dirs = torch.stack(
-        [(i - cx) / fx, -(j - cy) / fy, -torch.ones_like(i)], -1).to(device)
+    dirs = torch.stack([(i - cx) / fx, -(j - cy) / fy, -torch.ones_like(i)], -1).to(
+        device
+    )
     dirs = dirs.reshape(H, W, 1, 3)
     # Rotate ray directions from camera frame to the world frame
     # dot product, equals to: [c2w.dot(dir) for dir in dirs]
@@ -280,8 +290,3 @@ def normalize_3d_coordinate(p, bound):
     p[:, 1] = ((p[:, 1] - bound[1, 0]) / (bound[1, 1] - bound[1, 0])) * 2 - 1.0
     p[:, 2] = ((p[:, 2] - bound[2, 0]) / (bound[2, 1] - bound[2, 0])) * 2 - 1.0
     return p
-
-
-
-
-

@@ -1,7 +1,5 @@
 import glob
 import os
-from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -16,14 +14,14 @@ class ScannetDataset(GradSLAMDataset):
         config_dict,
         basedir,
         sequence,
-        stride: Optional[int] = None,
-        start: Optional[int] = 0,
-        end: Optional[int] = -1,
-        desired_height: Optional[int] = 968,
-        desired_width: Optional[int] = 1296,
-        load_embeddings: Optional[bool] = False,
-        embedding_dir: Optional[str] = "embeddings",
-        embedding_dim: Optional[int] = 512,
+        stride: int | None = None,
+        start: int | None = 0,
+        end: int | None = -1,
+        desired_height: int | None = 968,
+        desired_width: int | None = 1296,
+        load_embeddings: bool | None = False,
+        embedding_dir: str | None = "embeddings",
+        embedding_dim: int | None = 512,
         **kwargs,
     ):
         self.input_folder = os.path.join(basedir, sequence)
@@ -46,7 +44,9 @@ class ScannetDataset(GradSLAMDataset):
         depth_paths = natsorted(glob.glob(f"{self.input_folder}/depth/*.png"))
         embedding_paths = None
         if self.load_embeddings:
-            embedding_paths = natsorted(glob.glob(f"{self.input_folder}/{self.embedding_dir}/*.pt"))
+            embedding_paths = natsorted(
+                glob.glob(f"{self.input_folder}/{self.embedding_dir}/*.pt")
+            )
         return color_paths, depth_paths, embedding_paths
 
     def load_poses(self):
@@ -61,4 +61,3 @@ class ScannetDataset(GradSLAMDataset):
         print(embedding_file_path)
         embedding = torch.load(embedding_file_path, map_location="cpu")
         return embedding.permute(0, 2, 3, 1)  # (1, H, W, embedding_dim)
-    

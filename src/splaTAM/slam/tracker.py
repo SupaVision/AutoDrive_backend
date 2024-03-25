@@ -4,7 +4,9 @@ import torch
 from src.splaTAM.structures.camera import get_pointcloud
 
 
-def keyframe_selection_overlap(gt_depth, w2c, intrinsics, keyframe_list, k, pixels=1600):
+def keyframe_selection_overlap(
+    gt_depth, w2c, intrinsics, keyframe_list, k, pixels=1600
+):
     """
     Select overlapping keyframes to the current camera observation.
 
@@ -31,7 +33,7 @@ def keyframe_selection_overlap(gt_depth, w2c, intrinsics, keyframe_list, k, pixe
     list_keyframe = []
     for keyframeid, keyframe in enumerate(keyframe_list):
         # Get the estimated world2cam of the keyframe
-        est_w2c = keyframe['est_w2c']
+        est_w2c = keyframe["est_w2c"]
         # Transform the 3D pointcloud to the keyframe's camera space
         pts4 = torch.cat([pts, torch.ones_like(pts[:, :1])], dim=1)
         transformed_pts = (est_w2c @ pts4.T).T[:, :3]
@@ -43,21 +45,29 @@ def keyframe_selection_overlap(gt_depth, w2c, intrinsics, keyframe_list, k, pixe
         projected_pts = points_2d[:, :2]
         # Filter out the points that are outside the image
         edge = 20
-        mask = (projected_pts[:, 0] < width -edge ) *(projected_pts[:, 0] > edge) * \
-               (projected_pts[:, 1] < height -edge ) *(projected_pts[:, 1] > edge)
+        mask = (
+            (projected_pts[:, 0] < width - edge)
+            * (projected_pts[:, 0] > edge)
+            * (projected_pts[:, 1] < height - edge)
+            * (projected_pts[:, 1] > edge)
+        )
         mask = mask & (points_z[:, 0] > 0)
         # Compute the percentage of points that are inside the image
-        percent_inside = mask.sum( ) /projected_pts.shape[0]
-        list_keyframe.append(
-            {'id': keyframeid, 'percent_inside': percent_inside})
+        percent_inside = mask.sum() / projected_pts.shape[0]
+        list_keyframe.append({"id": keyframeid, "percent_inside": percent_inside})
 
     # Sort the keyframes based on the percentage of points that are inside the image
     list_keyframe = sorted(
-        list_keyframe, key=lambda i: i['percent_inside'], reverse=True)
+        list_keyframe, key=lambda i: i["percent_inside"], reverse=True
+    )
     # Select the keyframes with percentage of points inside the image > 0
-    selected_keyframe_list = [keyframe_dict['id']
-                              for keyframe_dict in list_keyframe if keyframe_dict['percent_inside'] > 0.0]
-    selected_keyframe_list = list(np.random.permutation(
-        np.array(selected_keyframe_list))[:k])
+    selected_keyframe_list = [
+        keyframe_dict["id"]
+        for keyframe_dict in list_keyframe
+        if keyframe_dict["percent_inside"] > 0.0
+    ]
+    selected_keyframe_list = list(
+        np.random.permutation(np.array(selected_keyframe_list))[:k]
+    )
 
     return selected_keyframe_list

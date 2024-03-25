@@ -1,7 +1,5 @@
 import glob
 import os
-from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -16,14 +14,14 @@ class AzureKinectDataset(GradSLAMDataset):
         config_dict,
         basedir,
         sequence,
-        stride: Optional[int] = None,
-        start: Optional[int] = 0,
-        end: Optional[int] = -1,
-        desired_height: Optional[int] = 480,
-        desired_width: Optional[int] = 640,
-        load_embeddings: Optional[bool] = False,
-        embedding_dir: Optional[str] = "embeddings",
-        embedding_dim: Optional[int] = 512,
+        stride: int | None = None,
+        start: int | None = 0,
+        end: int | None = -1,
+        desired_height: int | None = 480,
+        desired_width: int | None = 640,
+        load_embeddings: bool | None = False,
+        embedding_dir: str | None = "embeddings",
+        embedding_dim: int | None = 512,
         **kwargs,
     ):
         self.input_folder = os.path.join(basedir, sequence)
@@ -53,12 +51,16 @@ class AzureKinectDataset(GradSLAMDataset):
         depth_paths = natsorted(glob.glob(f"{self.input_folder}/depth/*.png"))
         embedding_paths = None
         if self.load_embeddings:
-            embedding_paths = natsorted(glob.glob(f"{self.input_folder}/{self.embedding_dir}/*.pt"))
+            embedding_paths = natsorted(
+                glob.glob(f"{self.input_folder}/{self.embedding_dir}/*.pt")
+            )
         return color_paths, depth_paths, embedding_paths
 
     def load_poses(self):
         if self.pose_path is None:
-            print("WARNING: Dataset does not contain poses. Returning identity transform.")
+            print(
+                "WARNING: Dataset does not contain poses. Returning identity transform."
+            )
             return [torch.eye(4).float() for _ in range(self.num_imgs)]
         else:
             # Determine whether the posefile ends in ".log"
@@ -77,11 +79,12 @@ class AzureKinectDataset(GradSLAMDataset):
                 # print("Loading poses from .log format")
                 poses = []
                 lines = None
-                with open(self.pose_path, "r") as f:
+                with open(self.pose_path) as f:
                     lines = f.readlines()
                 if len(lines) % 5 != 0:
                     raise ValueError(
-                        "Incorrect file format for .log odom file " "Number of non-empty lines must be a multiple of 5"
+                        "Incorrect file format for .log odom file "
+                        "Number of non-empty lines must be a multiple of 5"
                     )
                 num_lines = len(lines) // 5
                 for i in range(0, num_lines):
@@ -95,7 +98,7 @@ class AzureKinectDataset(GradSLAMDataset):
             else:
                 poses = []
                 lines = None
-                with open(self.pose_path, "r") as f:
+                with open(self.pose_path) as f:
                     lines = f.readlines()
                 for line in lines:
                     if len(line.split()) == 0:

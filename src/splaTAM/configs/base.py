@@ -111,6 +111,7 @@ class TrackingConfig:
 # use_uncertainty_for_loss = False,
 # use_chamfer = False,
 
+
 @dataclass
 class PruningDict:
     start_after: int = 0  # 开始修剪的迭代次数
@@ -145,26 +146,37 @@ class MappingConfig:
     use_sil_for_loss: bool = False  # 是否使用轮廓信息计算损失
     ignore_outlier_depth_loss: bool = False  # 是否忽略深度异常值
     loss_weights: LossWeights = field(default_factory=lambda: LossWeights())  # 损失权重
-    lrs: LRates = field(default_factory=lambda: LRates(means3D=0.0001,
-                                                       rgb_colors=0.0025,
-                                                       unnorm_rotations=0.001,
-                                                       logit_opacities=0.05,
-                                                       log_scales=0.001,
-                                                       cam_unnorm_rots=0.0000,
-                                                       cam_trans=0.0000))  # 学习率
+    lrs: LRates = field(
+        default_factory=lambda: LRates(
+            means3D=0.0001,
+            rgb_colors=0.0025,
+            unnorm_rotations=0.001,
+            logit_opacities=0.05,
+            log_scales=0.001,
+            cam_unnorm_rots=0.0000,
+            cam_trans=0.0000,
+        )
+    )  # 学习率
     prune_gaussians: bool = True  # 是否在映射时修剪高斯体
-    pruning_dict: PruningDict = field(default_factory=lambda: PruningDict())  # 修剪高斯体的配置
+    pruning_dict: PruningDict = field(
+        default_factory=lambda: PruningDict()
+    )  # 修剪高斯体的配置
     use_gaussian_splatting_densification: bool = False  # 是否使用高斯体增密
-    densify_dict: DensifyDict = field(default_factory=lambda: DensifyDict())  # 高斯体增密配置
+    densify_dict: DensifyDict = field(
+        default_factory=lambda: DensifyDict()
+    )  # 高斯体增密配置
 
 
 # use_uncertainty_for_loss_mask = False,
 # use_uncertainty_for_loss = False,
 # use_chamfer = False,
 
+
 @dataclass
 class VisualizationConfig:
-    render_mode: Literal['color', 'depth', 'centers'] = 'color'  # 渲染模式 ['color', 'depth', 'centers']
+    render_mode: Literal["color", "depth", "centers"] = (
+        "color"  # 渲染模式 ['color', 'depth', 'centers']
+    )
     offset_first_viz_cam: bool = True  # 是否偏移第一视角相机
     show_sil: bool = False  # 是否显示轮廓而不是RGB
     visualize_cams: bool = True  # 是否可视化相机视锥和轨迹

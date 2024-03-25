@@ -1,7 +1,6 @@
 import copy
 import warnings
 from collections import OrderedDict
-from typing import List, Union
 
 import numpy as np
 import torch
@@ -16,7 +15,7 @@ __all__ = [
 ]
 
 
-def normalize_image(rgb: Union[torch.Tensor, np.ndarray]):
+def normalize_image(rgb: torch.Tensor | np.ndarray):
     r"""Normalizes RGB image values from :math:`[0, 255]` range to :math:`[0, 1]` range.
 
     Args:
@@ -37,7 +36,7 @@ def normalize_image(rgb: Union[torch.Tensor, np.ndarray]):
         raise TypeError("Unsupported input rgb type: %r" % type(rgb))
 
 
-def channels_first(rgb: Union[torch.Tensor, np.ndarray]):
+def channels_first(rgb: torch.Tensor | np.ndarray):
     r"""Converts from channels last representation :math:`(*, H, W, C)` to channels first representation
     :math:`(*, C, H, W)`
 
@@ -52,11 +51,11 @@ def channels_first(rgb: Union[torch.Tensor, np.ndarray]):
         - Output: :math:`(*, C, H, W)`
     """
     if not (isinstance(rgb, np.ndarray) or torch.is_tensor(rgb)):
-        raise TypeError("Unsupported input rgb type {}".format(type(rgb)))
+        raise TypeError(f"Unsupported input rgb type {type(rgb)}")
 
     if rgb.ndim < 3:
         raise ValueError(
-            "Input rgb must contain atleast 3 dims, but had {} dims.".format(rgb.ndim)
+            f"Input rgb must contain at least 3 dims, but had {rgb.ndim} dims."
         )
     if rgb.shape[-3] < rgb.shape[-1]:
         msg = "Are you sure that the input is correct? Number of channels exceeds height of image: %r > %r"
@@ -71,9 +70,9 @@ def channels_first(rgb: Union[torch.Tensor, np.ndarray]):
 
 
 def scale_intrinsics(
-    intrinsics: Union[np.ndarray, torch.Tensor],
-    h_ratio: Union[float, int],
-    w_ratio: Union[float, int],
+    intrinsics: np.ndarray | torch.Tensor,
+    h_ratio: float | int,
+    w_ratio: float | int,
 ):
     r"""Scales the intrinsics appropriately for resized frames where
     :math:`h_\text{ratio} = h_\text{new} / h_\text{old}` and :math:`w_\text{ratio} = w_\text{new} / w_\text{old}`
@@ -86,7 +85,7 @@ def scale_intrinsics(
             :math:`w_\text{ratio} = w_\text{new} / w_\text{old}`
 
     Returns:
-        numpy.ndarray or torch.Tensor: Intrinsics matrix scaled approprately for new frame size
+        numpy.ndarray or torch.Tensor: Intrinsics matrix scaled appropriately for new frame size
 
     Shape:
         - intrinsics: :math:`(*, 3, 3)` or :math:`(*, 4, 4)`
@@ -98,7 +97,7 @@ def scale_intrinsics(
     elif torch.is_tensor(intrinsics):
         scaled_intrinsics = intrinsics.to(torch.float).clone()
     else:
-        raise TypeError("Unsupported input intrinsics type {}".format(type(intrinsics)))
+        raise TypeError(f"Unsupported input intrinsics type {type(intrinsics)}")
     if not (intrinsics.shape[-2:] == (3, 3) or intrinsics.shape[-2:] == (4, 4)):
         raise ValueError(
             "intrinsics must have shape (*, 3, 3) or (*, 4, 4), but had shape {} instead".format(
@@ -118,7 +117,7 @@ def scale_intrinsics(
 
 
 def pointquaternion_to_homogeneous(
-    pointquaternions: Union[np.ndarray, torch.Tensor], eps: float = 1e-12
+    pointquaternions: np.ndarray | torch.Tensor, eps: float = 1e-12
 ):
     r"""Converts 3D point and unit quaternions :math:`(t_x, t_y, t_z, q_x, q_y, q_z, q_w)` to
     homogeneous transformations [R | t] where :math:`R` denotes the :math:`(3, 3)` rotation matrix and :math:`T`
@@ -151,15 +150,15 @@ def pointquaternion_to_homogeneous(
         isinstance(pointquaternions, np.ndarray) or torch.is_tensor(pointquaternions)
     ):
         raise TypeError(
-            '"pointquaternions" must be of type "np.ndarray" or "torch.Tensor". Got {0}'.format(
+            '"pointquaternions" must be of type "np.ndarray" or "torch.Tensor". Got {}'.format(
                 type(pointquaternions)
             )
         )
     if not isinstance(eps, float):
-        raise TypeError('"eps" must be of type "float". Got {0}.'.format(type(eps)))
+        raise TypeError(f'"eps" must be of type "float". Got {type(eps)}.')
     if pointquaternions.shape[-1] != 7:
         raise ValueError(
-            '"pointquaternions" must be of shape (*, 7). Got {0}.'.format(
+            '"pointquaternions" must be of shape (*, 7). Got {}.'.format(
                 pointquaternions.shape
             )
         )
@@ -176,7 +175,7 @@ def pointquaternion_to_homogeneous(
             output_shape, dtype=torch.float, device=pointquaternions.device
         )
 
-    q_norm = (0.5 * (q ** 2).sum(-1)[..., None]) ** 0.5
+    q_norm = (0.5 * (q**2).sum(-1)[..., None]) ** 0.5
     q /= (
         torch.max(q_norm, torch.tensor(eps))
         if torch.is_tensor(q_norm)
@@ -215,7 +214,7 @@ def pointquaternion_to_homogeneous(
     return transform
 
 
-def poses_to_transforms(poses: Union[np.ndarray, List[np.ndarray]]):
+def poses_to_transforms(poses: np.ndarray | list[np.ndarray]):
     r"""Converts poses to transformations w.r.t. the first frame in the sequence having identity pose
 
     Args:

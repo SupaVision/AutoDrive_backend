@@ -1,18 +1,27 @@
-import torch
-import numpy as np
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Optional, Union, List
-from importlib.machinery import SourceFileLoader
-
-from ..configs.base import BaseConfig, WandbConfig, DataSetConfig, TrackingConfig, MappingConfig, VisualizationConfig
-
+from ..configs.base import (
+    BaseConfig,
+    DataSetConfig,
+    MappingConfig,
+    TrackingConfig,
+    VisualizationConfig,
+    WandbConfig,
+)
 
 # 配置类等其他定义保持不变
 
+
 class SLAMBase:
-    def __init__(self, config: Union[
-        BaseConfig, WandbConfig, DataSetConfig, TrackingConfig, MappingConfig, VisualizationConfig]):
+    def __init__(
+        self,
+        config: (
+            BaseConfig
+            | WandbConfig
+            | DataSetConfig
+            | TrackingConfig
+            | MappingConfig
+            | VisualizationConfig
+        ),
+    ):
         self.config = config
 
     def load_data(self):

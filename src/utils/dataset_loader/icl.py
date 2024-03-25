@@ -1,7 +1,6 @@
 import glob
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 import numpy as np
 import torch
@@ -13,18 +12,18 @@ from .basedataset import GradSLAMDataset
 class ICLDataset(GradSLAMDataset):
     def __init__(
         self,
-        config_dict: Dict,
-        basedir: Union[Path, str],
-        sequence: Union[Path, str],
-        stride: Optional[int] = 1,
-        start: Optional[int] = 0,
-        end: Optional[int] = -1,
-        desired_height: Optional[int] = 480,
-        desired_width: Optional[int] = 640,
-        load_embeddings: Optional[bool] = False,
-        embedding_dir: Optional[Union[Path, str]] = "embeddings",
-        embedding_dim: Optional[int] = 512,
-        embedding_file_extension: Optional[str] = "pt",
+        config_dict: dict,
+        basedir: Path | str,
+        sequence: Path | str,
+        stride: int | None = 1,
+        start: int | None = 0,
+        end: int | None = -1,
+        desired_height: int | None = 480,
+        desired_width: int | None = 640,
+        load_embeddings: bool | None = False,
+        embedding_dir: Path | str | None = "embeddings",
+        embedding_dim: int | None = 512,
+        embedding_file_extension: str | None = "pt",
         **kwargs,
     ):
         self.input_folder = os.path.join(basedir, sequence)
@@ -53,7 +52,9 @@ class ICLDataset(GradSLAMDataset):
         embedding_paths = None
         if self.load_embeddings:
             embedding_paths = natsorted(
-                glob.glob(f"{self.input_folder}/{self.embedding_dir}/*.{self.embedding_file_extension}")
+                glob.glob(
+                    f"{self.input_folder}/{self.embedding_dir}/*.{self.embedding_file_extension}"
+                )
             )
         return color_paths, depth_paths, embedding_paths
 
@@ -61,7 +62,7 @@ class ICLDataset(GradSLAMDataset):
         poses = []
 
         lines = []
-        with open(self.pose_path, "r") as f:
+        with open(self.pose_path) as f:
             lines = f.readlines()
 
         _posearr = []
@@ -69,7 +70,9 @@ class ICLDataset(GradSLAMDataset):
             line = line.strip().split()
             if len(line) == 0:
                 continue
-            _npvec = np.asarray([float(line[0]), float(line[1]), float(line[2]), float(line[3])])
+            _npvec = np.asarray(
+                [float(line[0]), float(line[1]), float(line[2]), float(line[3])]
+            )
             _posearr.append(_npvec)
         _posearr = np.stack(_posearr)
 

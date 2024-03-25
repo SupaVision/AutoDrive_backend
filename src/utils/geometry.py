@@ -2,8 +2,6 @@
 Projective geometry utility functions.
 """
 
-from typing import Optional
-
 import torch
 from kornia.geometry.linalg import compose_transformations, inverse_transformation
 
@@ -23,12 +21,10 @@ def homogenize_points(pts: torch.Tensor):
 
     """
     if not isinstance(pts, torch.Tensor):
-        raise TypeError(
-            "Expected input type torch.Tensor. Instead got {}".format(type(pts))
-        )
+        raise TypeError(f"Expected input type torch.Tensor. Instead got {type(pts)}")
     if pts.dim() < 2:
         raise ValueError(
-            "Input tensor must have at least 2 dimensions. Got {} instad.".format(
+            "Input tensor must have at least 2 dimensions. Got {} instead.".format(
                 pts.dim()
             )
         )
@@ -55,12 +51,10 @@ def unhomogenize_points(pts: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
 
     """
     if not isinstance(pts, torch.Tensor):
-        raise TypeError(
-            "Expected input type torch.Tensor. Instead got {}".format(type(pts))
-        )
+        raise TypeError(f"Expected input type torch.Tensor. Instead got {type(pts)}")
     if pts.dim() < 2:
         raise ValueError(
-            "Input tensor must have at least 2 dimensions. Got {} instad.".format(
+            "Input tensor must have at least 2 dimensions. Got {} instead.".format(
                 pts.dim()
             )
         )
@@ -140,7 +134,7 @@ def normalize_quaternion(quaternion: torch.Tensor, eps: float = 1e-12):
 
     if not quaternion.shape[-1] == 4:
         raise ValueError(
-            "Input must be a tensor of shape (*, 4). Got {}.".format(quaternion.shape)
+            f"Input must be a tensor of shape (*, 4). Got {quaternion.shape}."
         )
     return torch.nn.functional.normalize(quaternion, p=2, dim=-1, eps=eps)
 
@@ -158,7 +152,7 @@ def quaternion_to_rotation_matrix(quaternion: torch.Tensor) -> torch.Tensor:
     """
     if not quaternion.shape[-1] == 4:
         raise ValueError(
-            "Input must be a tensor of shape (*, 4). Got {}".format(quaternion.shape)
+            f"Input must be a tensor of shape (*, 4). Got {quaternion.shape}"
         )
 
     # Normalize the input quaternion
@@ -221,10 +215,10 @@ def inverse_transfom_3d(trans: torch.Tensor):
         )
     if not trans.dim() in (2, 3) and trans.shape[-2, :] == (4, 4):
         raise ValueError(
-            "Input size must be N x 4 x 4 or 4 x 4. Got {} instead.".format(trans.shape)
+            f"Input size must be N x 4 x 4 or 4 x 4. Got {trans.shape} instead."
         )
 
-    # Unpack tensor into rotation and tranlation components
+    # Unpack tensor into rotation and translation components
     rmat: torch.Tensor = trans[..., :3, :3]
     tvec: torch.Tensor = trans[..., :3, 3]
 
@@ -307,7 +301,7 @@ def transform_pts_3d(pts_b: torch.Tensor, t_ab: torch.Tensor) -> torch.Tensor:
 
     Args:
         pts_b (torch.Tensor): points to be transformed (shape: :math:`N \times 3`)
-        t_ab (torch.Tensor): homogenous 3D transformation matrix (shape: :math:`4 \times 4`)
+        t_ab (torch.Tensor): homogeneous 3D transformation matrix (shape: :math:`4 \times 4`)
 
     Returns:
         pts_a (torch.Tensor): `pts_b` transformed to the coordinate frame `a`
@@ -334,11 +328,11 @@ def transform_pts_3d(pts_b: torch.Tensor, t_ab: torch.Tensor) -> torch.Tensor:
         )
     if t_ab.dim() != 2:
         raise ValueError(
-            "Expected t_ab to have 2 dimensions. Got {} instead.".format(t_ab.dim())
+            f"Expected t_ab to have 2 dimensions. Got {t_ab.dim()} instead."
         )
     if t_ab.shape[0] != 4 or t_ab.shape[1] != 4:
         raise ValueError(
-            "Expected t_ab to have shape (4, 4). Got {} instead.".format(t_ab.shape)
+            f"Expected t_ab to have shape (4, 4). Got {t_ab.shape} instead."
         )
 
     # Determine if we need to homogenize the points
@@ -413,7 +407,7 @@ def relative_transform_3d(
 def relative_transformation(
     trans_01: torch.Tensor, trans_02: torch.Tensor, orthogonal_rotations: bool = False
 ) -> torch.Tensor:
-    r"""Function that computes the relative homogenous transformation from a
+    r"""Function that computes the relative homogeneous transformation from a
     reference transformation :math:`T_1^{0} = \begin{bmatrix} R_1 & t_1 \\
     \mathbf{0} & 1 \end{bmatrix}` to destination :math:`T_2^{0} =
     \begin{bmatrix} R_2 & t_2 \\ \mathbf{0} & 1 \end{bmatrix}`.
@@ -447,11 +441,11 @@ def relative_transformation(
     """
     if not torch.is_tensor(trans_01):
         raise TypeError(
-            "Input trans_01 type is not a torch.Tensor. Got {}".format(type(trans_01))
+            f"Input trans_01 type is not a torch.Tensor. Got {type(trans_01)}"
         )
     if not torch.is_tensor(trans_02):
         raise TypeError(
-            "Input trans_02 type is not a torch.Tensor. Got {}".format(type(trans_02))
+            f"Input trans_02 type is not a torch.Tensor. Got {type(trans_02)}"
         )
     if not trans_01.dim() in (2, 3) and trans_01.shape[-2:] == (4, 4):
         raise ValueError(
@@ -574,7 +568,7 @@ def unnormalize_pixel_coords(
 
 
 def create_meshgrid(
-    height: int, width: int, normalized_coords: Optional[bool] = True
+    height: int, width: int, normalized_coords: bool | None = True
 ) -> torch.Tensor:
     r"""Generates a coordinate grid for an image.
 
@@ -595,8 +589,8 @@ def create_meshgrid(
 
     """
 
-    xs: Optional[torch.Tensor] = None
-    ys: Optional[torch.Tensor] = None
+    xs: torch.Tensor | None = None
+    ys: torch.Tensor | None = None
     if normalized_coords:
         xs = torch.linspace(-1, 1, height)
         ys = torch.linspace(-1, 1, width)
@@ -604,14 +598,14 @@ def create_meshgrid(
         xs = torch.linspace(0, height - 1, height)
         ys = torch.linspace(0, width - 1, width)
     # Generate grid (2 x H x W)
-    base_grid: torch.Tensor = torch.stack((torch.meshgrid([xs, ys])))
+    base_grid: torch.Tensor = torch.stack(torch.meshgrid([xs, ys]))
     return base_grid.permute(1, 2, 0).unsqueeze(0)  # 1 xH x W x 2
 
 
 def cam2pixel(
     cam_coords_src: torch.Tensor,
     dst_proj_src: torch.Tensor,
-    eps: Optional[float] = 1e-6,
+    eps: float | None = 1e-6,
 ) -> torch.Tensor:
     r"""Transforms coordinates from the camera frame to the pixel frame.
 
@@ -701,7 +695,7 @@ def pixel2cam(
 
 
 def cam2pixel_KF(
-    cam_coords_src: torch.Tensor, P: torch.Tensor, eps: Optional[float] = 1e-6
+    cam_coords_src: torch.Tensor, P: torch.Tensor, eps: float | None = 1e-6
 ) -> torch.Tensor:
     r"""Projects camera coordinates onto the image.
 
@@ -810,7 +804,7 @@ def transform_normals(normals: torch.Tensor, transform: torch.Tensor):
 
     if not normals.ndim == 2:
         raise ValueError(
-            "normals should have ndim of 2, but had {} instead.".format(normals.ndim)
+            f"normals should have ndim of 2, but had {normals.ndim} instead."
         )
     if not normals.shape[1] == 3:
         raise ValueError(

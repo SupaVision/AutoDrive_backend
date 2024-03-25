@@ -5,8 +5,19 @@ from pathlib import Path
 
 import open3d as o3d
 
-from .dataset_loader import ICLDataset, ReplicaDataset, ReplicaV2Dataset, AzureKinectDataset, ScannetDataset, \
-    Ai2thorDataset, Record3DDataset, RealsenseDataset, TUMDataset, ScannetPPDataset, NeRFCaptureDataset
+from .dataset_loader import (
+    Ai2thorDataset,
+    AzureKinectDataset,
+    ICLDataset,
+    NeRFCaptureDataset,
+    RealsenseDataset,
+    Record3DDataset,
+    ReplicaDataset,
+    ReplicaV2Dataset,
+    ScannetDataset,
+    ScannetPPDataset,
+    TUMDataset,
+)
 
 
 def ply_show(file_path: Path | str):
@@ -59,4 +70,5 @@ def get_dataset(config_dict, basedir, sequence, **kwargs):
 if __name__ == "__main__":
     # ply_show("/home/atticuszz/DevSpace/python/AutoDrive_backend/Datasets/mp3d/1LXtFkjw3qL/1LXtFkjw3qL_semantic.ply")
     load_and_show_ply(
-        "/home/atticuszz/DevSpace/python/AutoDrive_backend/Datasets/mp3d/1LXtFkjw3qL/1LXtFkjw3qL_semantic.ply")
+        "/home/atticuszz/DevSpace/python/AutoDrive_backend/Datasets/mp3d/1LXtFkjw3qL/1LXtFkjw3qL_semantic.ply"
+    )
