@@ -7,6 +7,8 @@ import numpy as np
 from torch import Tensor
 from torch.utils.data import Dataset
 import torch.nn.functional as F
+
+from src.splaTAM.structures.RGB_D_images import RGBDImage
 from src.utils.common import as_intrinsics_matrix, set_channels_first, normalize_image
 from src.utils.geometry import relative_transformation
 
@@ -43,7 +45,7 @@ class BaseDataset(Dataset):
     :var scale: tuple[int, int] desired width and height of the images
     """
 
-    def __init__(self, cfg: dict, input_folder: Path, scale: tuple[int, int], device: str = 'cuda:0',
+    def __init__(self, cfg: dict, input_folder: Path, scale: float, device: str = 'cuda:0',
                  relative_pose: bool = False
                  ):
         super().__init__()
@@ -58,9 +60,9 @@ class BaseDataset(Dataset):
 
         self.distortion = np.array(
             cfg['cam']['distortion']) if 'distortion' in cfg['cam'] else None
-        self.crop_size = cfg['cam']['crop_size'] if 'crop_size' in cfg['cam'] else None
-
-        self.crop_edge = cfg['cam']['crop_edge']
+        # self.crop_size = cfg['cam']['crop_size'] if 'crop_size' in cfg['cam'] else None
+        #
+        # self.crop_edge = cfg['cam']['crop_edge']
 
         self.color_paths, self.depth_paths = self.filepaths()
         self.num_img = len(self.color_paths)
@@ -74,11 +76,10 @@ class BaseDataset(Dataset):
     def __len__(self):
         return self.num_img
 
-    def __getitem__(self, index) -> tuple[int, Tensor, Tensor, Tensor]:
+    def __getitem__(self, index) -> RGBDImage:
         color_path = self.color_paths[index]
         depth_path = self.depth_paths[index]
         color = cv2.imread(color_path.as_posix())
-        color = self._preprocess_color(color)
         if depth_path.suffix == '.png':
             depth = cv2.imread(depth_path.as_posix(), cv2.IMREAD_UNCHANGED)
         # elif '.exr' in depth_path:
@@ -87,34 +88,19 @@ class BaseDataset(Dataset):
             raise ValueError(
                 f'Unsupported depth file format {depth_path.suffix}.')
 
-        if self.distortion is not None:
-            K = as_intrinsics_matrix([self.fx, self.fy, self.cx, self.cy])
-            # un-distortion is only applied on color image, not depth!
-            color = cv2.undistort(color, K, self.distortion)
-        depth = self._preprocess_depth(depth)
-        H, W = depth.shape
-        # TODO: check color and depth
-        color = torch.from_numpy(color)
-        depth = torch.from_numpy(depth)
+        K = as_intrinsics_matrix([self.fx, self.fy, self.cx, self.cy])
 
-        if self.crop_size is not None:
-            # follow the pre-processing step in lietorch, actually is resize
-            color = color.permute(2, 0, 1)
-            color = F.interpolate(
-                color[None], self.crop_size, mode='bilinear', align_corners=True)[0]
-            depth = F.interpolate(
-                depth[None, None], self.crop_size, mode='nearest')[0, 0]
-            color = color.permute(1, 2, 0).contiguous()
+        rgb_d_image = RGBDImage(color, depth, K, self.poses[index], device=self.device, scale=self.scale)
 
-        edge = self.crop_edge
-        if edge > 0:
-            # crop image edge, there are invalid value on the edge of the color image
-            color = color[edge:-edge, edge:-edge]
-            depth = depth[edge:-edge, edge:-edge]
-        pose = self.poses[index]
-        pose[:3, 3] *= self.scale
-        # TODO: follow RGP-D class add intrinsics_matrix
-        return index, color.to(self.device), depth.to(self.device), pose.to(self.device)
+        # edge = self.crop_edge
+        # if edge > 0:
+        #     # crop image edge, there are invalid value on the edge of the color image
+        #     color = color[edge:-edge, edge:-edge]
+        #     depth = depth[edge:-edge, edge:-edge]
+        # pose = self.poses[index]
+        # pose[:3, 3] *= self.scale
+
+        return rgb_d_image
 
     def _preprocess_color(self, color: np.ndarray, normalize_color: bool = True,
                           channels_first: bool = False) -> np.ndarray:

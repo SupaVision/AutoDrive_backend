@@ -1,8 +1,36 @@
+import numpy as np
 import torch
 
-from src.splaTAM.slam.slam_run import get_pointcloud
+from src.splaTAM.structures.camera import get_pointcloud
 from src.splaTAM.utils.geometry import transform_to_frame, transformed_params2depthplussilhouette, build_rotation
+from diff_gaussian_rasterization import GaussianRasterizer as Renderer
 
+def initialize_new_params(new_pt_cld, mean3_sq_dist, gaussian_distribution):
+    num_pts = new_pt_cld.shape[0]
+    means3D = new_pt_cld[:, :3] # [num_gaussians, 3]
+    unnorm_rots = np.tile([1, 0, 0, 0], (num_pts, 1)) # [num_gaussians, 4]
+    logit_opacities = torch.zeros((num_pts, 1), dtype=torch.float, device="cuda")
+    if gaussian_distribution == "isotropic":
+        log_scales = torch.tile(torch.log(torch.sqrt(mean3_sq_dist))[..., None], (1, 1))
+    elif gaussian_distribution == "anisotropic":
+        log_scales = torch.tile(torch.log(torch.sqrt(mean3_sq_dist))[..., None], (1, 3))
+    else:
+        raise ValueError(f"Unknown gaussian_distribution {gaussian_distribution}")
+    params = {
+        'means3D': means3D,
+        'rgb_colors': new_pt_cld[:, 3:6],
+        'unnorm_rotations': unnorm_rots,
+        'logit_opacities': logit_opacities,
+        'log_scales': log_scales,
+    }
+    for k, v in params.items():
+        # Check if value is already a torch tensor
+        if not isinstance(v, torch.Tensor):
+            params[k] = torch.nn.Parameter(torch.tensor(v).cuda().float().contiguous().requires_grad_(True))
+        else:
+            params[k] = torch.nn.Parameter(v.cuda().float().contiguous().requires_grad_(True))
+
+    return params
 
 def add_new_gaussians(params, variables, curr_data, sil_thres,
                       time_idx, mean_sq_dist_method, gaussian_distribution):

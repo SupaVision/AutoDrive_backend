@@ -1,3 +1,8 @@
+import logging
+
+import numpy as np
+from typing import Union
+
 import torch
 import torch.nn.functional as F
 from torch.autograd import Variable
@@ -518,3 +523,70 @@ def matrix_to_quaternion(matrix: torch.Tensor) -> torch.Tensor:
     return quat_candidates[
            F.one_hot(q_abs.argmax(dim=-1), num_classes=4) > 0.5, :
            ].reshape(batch_dim + (4,))
+
+
+def normalize_image(rgb: Union[torch.Tensor, np.ndarray]) -> Union[torch.Tensor, np.ndarray]:
+    r"""Normalizes RGB image values from :math:`[0, 255]` range to :math:`[0, 1]` range.
+
+    Args:
+        rgb (torch.Tensor or numpy.ndarray): RGB image in range :math:`[0, 255]`
+
+    Returns:
+        torch.Tensor or numpy.ndarray: Normalized RGB image in range :math:`[0, 1]`
+
+    Shape:
+        - rgb: :math:`(*)` (any shape)
+        - Output: Same shape as input :math:`(*)`
+    """
+    if torch.is_tensor(rgb):
+        return rgb.float() / 255
+    elif isinstance(rgb, np.ndarray):
+        return rgb.astype(float) / 255
+    else:
+        raise TypeError(f"Unsupported input rgb type: {type(rgb)}")
+
+
+def set_channels_first(rgb: Union[torch.Tensor, np.ndarray]) -> Union[torch.Tensor, np.ndarray]:
+    r"""Converts from channels last representation :math:`(*, H, W, C)` to channels first representation
+    :math:`(*, C, H, W)`
+
+    Args:
+        rgb (torch.Tensor or numpy.ndarray): :math:`(*, H, W, C)` ordering `(*, height, width, channels)`
+
+    Returns:
+        torch.Tensor or numpy.ndarray: :math:`(*, C, H, W)` ordering
+
+    Shape:
+        - rgb: :math:`(*, H, W, C)`
+        - Output: :math:`(*, C, H, W)`
+    """
+    if not (isinstance(rgb, np.ndarray) or torch.is_tensor(rgb)):
+        raise TypeError(f"Unsupported input rgb type {type(rgb)}")
+
+    if rgb.ndim < 3:
+        raise ValueError(
+            f"Input rgb must contain atleast 3 dims, but had {rgb.ndim} dims."
+        )
+    if rgb.shape[-3] < rgb.shape[-1]:
+        logging.warning(
+            f"Are you sure that the input is correct? Number of channels exceeds height of image: {rgb.shape[-1]} > {rgb.shape[-3]}")
+    ordering = list(range(rgb.ndim))
+    ordering[-2], ordering[-1], ordering[-3] = ordering[-3], ordering[-2], ordering[-1]
+
+    if isinstance(rgb, np.ndarray):
+        return np.ascontiguousarray(rgb.transpose(*ordering))
+    elif torch.is_tensor(rgb):
+        return rgb.permute(*ordering).contiguous()
+
+
+def as_intrinsics_matrix(intrinsics):
+    """
+    Get matrix representation of intrinsics.
+
+    """
+    K = np.eye(3)
+    K[0, 0] = intrinsics[0]
+    K[1, 1] = intrinsics[1]
+    K[0, 2] = intrinsics[2]
+    K[1, 2] = intrinsics[3]
+    return K
