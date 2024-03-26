@@ -10,6 +10,10 @@ from src.splaTAM.utils.geometry import (
 )
 
 
+class GaussianModel:
+    pass
+
+
 def initialize_new_params(new_pt_cld, mean3_sq_dist, gaussian_distribution):
     num_pts = new_pt_cld.shape[0]
     means3D = new_pt_cld[:, :3]  # [num_gaussians, 3]

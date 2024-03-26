@@ -8,8 +8,7 @@ from torch import Tensor
 from torch.utils.data import Dataset
 
 from src.splaTAM.structures.RGB_D_images import RGBDImage
-from src.utils.common import as_intrinsics_matrix, normalize_image, set_channels_first
-from src.utils.geometry import relative_transformation
+from src.splaTAM.utils.geometry import as_intrinsics_matrix, relative_transformation
 
 
 def get_dataset(config_dict, basedir, sequence, **kwargs):
@@ -91,6 +90,8 @@ class BaseDataset(Dataset):
         color_path = self.color_paths[index]
         depth_path = self.depth_paths[index]
         color = cv2.imread(color_path.as_posix())
+        color = cv2.cvtColor(color, cv2.COLOR_BGR2RGB)
+
         if depth_path.suffix == ".png":
             depth = cv2.imread(depth_path.as_posix(), cv2.IMREAD_UNCHANGED)
         # elif '.exr' in depth_path:
@@ -99,7 +100,9 @@ class BaseDataset(Dataset):
             raise ValueError(f"Unsupported depth file format {depth_path.suffix}.")
 
         K = as_intrinsics_matrix([self.fx, self.fy, self.cx, self.cy])
-
+        color = torch.from_numpy(color)
+        depth = torch.from_numpy(depth)
+        K = torch.from_numpy(K)
         rgb_d_image = RGBDImage(
             color, depth, K, self.poses[index], device=self.device, scale=self.scale
         )
@@ -114,59 +117,7 @@ class BaseDataset(Dataset):
 
         return rgb_d_image
 
-    def _preprocess_color(
-        self,
-        color: np.ndarray,
-        normalize_color: bool = True,
-        channels_first: bool = False,
-    ) -> np.ndarray:
-        """Preprocesses the color image by resizing to :math:`(H, W, C)`, (optionally) normalizing values to
-        :math:`[0, 1]`, and (optionally) using channels first :math:`(C, H, W)` representation.
-        Args:
-            color (np.ndarray): Raw input rgb image
-        Reruns:
-            np.ndarray: Preprocessed rgb image
-        Shape:
-            - Input: :math:`(H_\text{old}, W_\text{old}, C)`
-            - Output: :math:`(H, W, C)` if `self.channels_first == False`, else :math:`(C, H, W)`.
-        """
-        # weight and height
-        color = cv2.resize(
-            color,
-            (self.scale[0], self.scale[1]),
-            interpolation=cv2.INTER_LINEAR,
-        )
-        color = cv2.cvtColor(color, cv2.COLOR_BGR2RGB)
-        if normalize_color:
-            color = normalize_image(color)
-        if channels_first:
-            color = set_channels_first(color)
-        return color
-
-    def _preprocess_depth(
-        self, depth: np.ndarray, channels_first: bool = True
-    ) -> np.ndarray:
-        """Preprocesses the depth image by resizing, adding channel dimension, and scaling values to meters. Optionally
-        converts depth from channels last :math:`(H, W, 1)` to channels first :math:`(1, H, W)` representation.
-        Args:
-            depth (np.ndarray): Raw depth image
-        Returns:
-            np.ndarray: Preprocessed depth
-        Shape:
-            - depth: :math:`(H_\text{old}, W_\text{old})`
-            - Output: :math:`(H, W, 1)` if `self.channels_first == False`, else :math:`(1, H, W)`.
-        """
-        depth = cv2.resize(
-            depth.astype(np.float32),
-            (self.scale[0], self.scale[1]),
-            interpolation=cv2.INTER_NEAREST,
-        )
-        depth = np.expand_dims(depth, -1)
-        if channels_first:
-            depth = set_channels_first(depth)
-        return depth / self.png_depth_scale
-
-    def _preprocess_poses(self, poses: torch.Tensor):
+    def _preprocess_poses(self, poses: torch.Tensor) -> Tensor:
         r"""Preprocesses the poses by setting first pose in a sequence to identity and computing the relative
         homogeneous transformation for all other poses.
         Args:
@@ -199,7 +150,7 @@ class Replica(BaseDataset):
         self,
         cfg: dict,
         input_folder: Path,
-        scale: tuple[int, int] = (1200, 680),
+        scale: float,
         device: str = "cuda:0",
         relative_pose: bool = False,
     ):
