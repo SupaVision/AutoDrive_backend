@@ -22,3 +22,6 @@
 [submodule "thirdparty/nice-slam"]
 	path = thirdparty/nice-slam
 	url = git@github.com:SupaVision/nice-slam.git
+[submodule "thirdparty/Gaussian-SLAM"]
+	path = thirdparty/Gaussian-SLAM
+	url = git@github.com:SupaVision/Gaussian-SLAM.git
